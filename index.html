@@ -26,26 +26,6 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
   min-height:100vh;transition:background .3s,color .3s;padding-bottom:88px}
 .hidden{display:none!important}
 
-/* ===== PIN ===== */
-.pin-screen{position:fixed;inset:0;background:linear-gradient(135deg,#10b981,#059669);
-  display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
-.pin-card{background:var(--card);border-radius:24px;padding:32px 24px;width:100%;max-width:360px;
-  text-align:center;box-shadow:var(--shadow-lg)}
-.pin-logo{font-size:56px;margin-bottom:8px}
-.pin-card h1{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text)}
-.pin-card p{color:var(--text-muted);font-size:14px;margin-bottom:20px}
-.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:24px}
-.pin-dot{width:16px;height:16px;border-radius:50%;background:var(--border);transition:.2s}
-.pin-dot.filled{background:var(--primary);transform:scale(1.15)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.pin-key{aspect-ratio:1;border:none;border-radius:14px;background:var(--bg);color:var(--text);
-  font-family:inherit;font-size:22px;font-weight:700;cursor:pointer;transition:.15s}
-.pin-key:active{transform:scale(.92);background:var(--primary);color:#fff}
-.pin-key.del{font-size:18px}
-.pin-hint{margin-top:16px;font-size:12px;color:var(--text-muted)}
-.pin-error{animation:shake .4s;border:2px solid var(--danger)!important}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-
 /* ===== HEADER ===== */
 .header{position:sticky;top:0;z-index:100;background:var(--card);
   box-shadow:0 2px 12px rgba(0,0,0,.06);padding:12px 16px}
@@ -223,26 +203,13 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 </head>
 <body>
 
-<!-- شاشة PIN -->
-<div id="pinScreen" class="pin-screen">
-  <div class="pin-card" id="pinCard">
-    <div class="pin-logo">💰</div>
-    <h1>دفتر الديون Pro</h1>
-    <p>أدخل رمز الدخول للمتابعة</p>
-    <div class="pin-dots" id="pinDots"></div>
-    <div class="pin-pad" id="pinPad"></div>
-    <p class="pin-hint">الرمز الافتراضي: <b>1234</b></p>
-  </div>
-</div>
-
 <!-- التطبيق الرئيسي -->
-<div id="app" class="app hidden">
+<div id="app" class="app">
   <header class="header">
     <div class="header-inner">
       <div class="logo"><span class="logo-icon">💰</span><span class="logo-text">دفتر الديون <b>Pro</b></span></div>
       <div class="header-actions">
         <button class="icon-btn" id="themeBtn" title="الوضع الليلي">🌙</button>
-        <button class="icon-btn" id="lockBtn" title="قفل">🔒</button>
       </div>
     </div>
   </header>
@@ -269,7 +236,7 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 const STORAGE_KEY = 'daftar_diyoun_pro_v1';
 const defaultData = () => ({
   customers: [],
-  settings: { currency:'د.ل', pin:'1234', darkMode:false, reminderDays:3 }
+  settings: { currency:'د.ل', darkMode:false, reminderDays:3 }
 });
 
 let DB = loadDB();
@@ -277,7 +244,6 @@ let currentScreen = 'dashboard';
 let currentCustomerId = null;
 let searchQuery = '', filterCategory = 'all', sortBy = 'recent';
 let dashChart = null, topChart = null;
-let pinned = true, pinBuf = '';
 
 function loadDB(){
   try {
@@ -329,63 +295,14 @@ function reminderCount(){
    ============================================================ */
 function init(){
   applyTheme();
-  buildPinPad();
   attachGlobalEvents();
-  if(!DB.settings.pin){ DB.settings.pin='1234'; saveDB(); }
-  showPin();
+  render();
 }
 
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', DB.settings.darkMode?'dark':'light');
   const btn = document.getElementById('themeBtn');
   if(btn) btn.textContent = DB.settings.darkMode?'☀️':'🌙';
-}
-
-/* ============================================================
-   PIN
-   ============================================================ */
-function buildPinPad(){
-  const pad = document.getElementById('pinPad');
-  pad.innerHTML = '';
-  ['1','2','3','4','5','6','7','8','9','C','0','⌫'].forEach(k=>{
-    const b = document.createElement('button');
-    b.className = 'pin-key' + (k==='⌫'?' del':'');
-    b.textContent = k;
-    b.onclick = ()=>{ if(k==='C'){ pinBuf=''; } else if(k==='⌫'){ pinBuf=pinBuf.slice(0,-1); } else if(pinBuf.length<4){ pinBuf+=k; } renderPinDots(); checkPin(); };
-    pad.appendChild(b);
-  });
-  renderPinDots();
-}
-function renderPinDots(){
-  const dots = document.getElementById('pinDots');
-  dots.innerHTML = '';
-  for(let i=0;i<4;i++){
-    const d = document.createElement('div');
-    d.className = 'pin-dot' + (i<pinBuf.length?' filled':'');
-    dots.appendChild(d);
-  }
-}
-function checkPin(){
-  if(pinBuf.length!==4) return;
-  if(pinBuf === DB.settings.pin){ unlockApp(); }
-  else {
-    const card = document.getElementById('pinCard');
-    card.classList.add('pin-error');
-    setTimeout(()=>{ card.classList.remove('pin-error'); pinBuf=''; renderPinDots(); }, 500);
-  }
-}
-function showPin(){
-  pinned = true;
-  document.getElementById('pinScreen').classList.remove('hidden');
-  document.getElementById('app').classList.add('hidden');
-  pinBuf = ''; renderPinDots();
-}
-function unlockApp(){
-  pinned = false;
-  document.getElementById('pinScreen').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  pinBuf = '';
-  render();
 }
 
 /* ============================================================
@@ -398,7 +315,6 @@ function attachGlobalEvents(){
   document.getElementById('themeBtn').onclick = ()=>{
     DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme();
   };
-  document.getElementById('lockBtn').onclick = showPin;
 }
 
 function setActiveNav(){
@@ -415,4 +331,714 @@ function render(){
   setActiveNav();
   const main = document.getElementById('mainContent');
   if(currentCustomerId) return renderCustomerDetail(main);
-                             
+  switch(currentScreen){
+    case 'dashboard': return renderDashboard(main);
+    case 'customers': return renderCustomers(main);
+    case 'reminders': return renderReminders(main);
+    case 'backup': return renderBackup(main);
+    case 'settings': return renderSettings(main);
+  }
+}
+
+/* ============================================================
+   لوحة التحكم
+   ============================================================ */
+function renderDashboard(el){
+  const cs = allCustomers();
+  const totalRemaining = cs.reduce((s,c)=>s+customerRemaining(c),0);
+  const totalPaidSum   = cs.reduce((s,c)=>s+customerPaid(c),0);
+  const totalAll       = cs.reduce((s,c)=>s+customerTotal(c),0);
+  const overdueCount   = cs.reduce((s,c)=>s+c.debts.filter(debtIsOverdue).length,0);
+  const activeCustomers= cs.filter(c=>customerRemaining(c)>0).length;
+
+  el.innerHTML = `
+    <div class="screen">
+      <div class="stat-grid">
+        <div class="stat-card danger">
+          <div class="stat-label">إجمالي الديون المتبقية</div>
+          <div class="stat-value danger">${fmt(totalRemaining)} ${cur()}</div>
+          <div class="stat-sub">من ${activeCustomers} زبون نشط</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">إجمالي المسدد</div>
+          <div class="stat-value success">${fmt(totalPaidSum)} ${cur()}</div>
+          <div class="stat-sub">من أصل ${fmt(totalAll)} ${cur()}</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">ديون متأخرة</div>
+          <div class="stat-value">${overdueCount}</div>
+          <div class="stat-sub">تحتاج متابعة</div>
+        </div>
+        <div class="stat-card info">
+          <div class="stat-label">عدد الزبائن</div>
+          <div class="stat-value">${cs.length}</div>
+          <div class="stat-sub">زبون مسجل</div>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <h3>توزيع المسدد مقابل المتبقي</h3>
+        <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
+      </div>
+
+      <div class="chart-box">
+        <h3>أعلى 5 زبائن بالديون</h3>
+        <div class="chart-wrap"><canvas id="topChart"></canvas></div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="quickAdd">➕ إضافة زبون جديد</button>
+    </div>`;
+
+  document.getElementById('quickAdd').onclick = ()=>openCustomerModal();
+
+  // Chart 1 — Doughnut
+  if(dashChart) dashChart.destroy();
+  const dctx = document.getElementById('dashChart');
+  if(totalAll>0){
+    dashChart = new Chart(dctx, {
+      type:'doughnut',
+      data:{
+        labels:['مسدد','متبقي'],
+        datasets:[{data:[totalPaidSum,totalRemaining],
+          backgroundColor:['#10b981','#ef4444'],borderWidth:0}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Cairo'}}}}}
+    });
+  } else {
+    dctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:60px 0;font-size:13px">لا توجد بيانات بعد</p>';
+  }
+
+  // Chart 2 — Bar
+  if(topChart) topChart.destroy();
+  const top = [...cs].map(c=>({name:c.name,val:customerRemaining(c)}))
+                     .filter(x=>x.val>0).sort((a,b)=>b.val-a.val).slice(0,5);
+  const tctx = document.getElementById('topChart');
+  if(top.length && tctx){
+    topChart = new Chart(tctx,{
+      type:'bar',
+      data:{labels:top.map(t=>t.name),
+        datasets:[{label:'المتبقي',data:top.map(t=>t.val),
+          backgroundColor:'#10b981',borderRadius:8}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,ticks:{font:{family:'Cairo'}}},
+                x:{ticks:{font:{family:'Cairo'}}}}}
+    });
+  } else if(tctx){
+    tctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:60px 0;font-size:13px">لا توجد ديون مسجلة</p>';
+  }
+}
+
+/* ============================================================
+   قائمة الزبائن
+   ============================================================ */
+function renderCustomers(el){
+  let list = allCustomers();
+  if(searchQuery) list = list.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.phone||'').includes(searchQuery));
+  if(filterCategory!=='all') list = list.filter(c=>c.category===filterCategory);
+  list.sort((a,b)=>{
+    if(sortBy==='recent') return (b.createdAt||0)-(a.createdAt||0);
+    if(sortBy==='amount') return customerRemaining(b)-customerRemaining(a);
+    if(sortBy==='name') return a.name.localeCompare(b.name,'ar');
+    return 0;
+  });
+
+  el.innerHTML = `
+    <div class="screen">
+      <div class="section-header">
+        <div class="section-title">الزبائن (${list.length})</div>
+        <button class="btn btn-primary btn-sm" id="addCustomer">➕ زبون</button>
+      </div>
+      <div class="search-box">
+        <input class="search-input" id="searchInput" placeholder="🔍 ابحث بالاسم أو الهاتف..." value="${escapeHtml(searchQuery)}">
+      </div>
+      <div class="search-box" style="overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
+        <button class="chip ${filterCategory==='all'?'active':''}" data-filter="all">الكل</button>
+        <button class="chip ${filterCategory==='regular'?'active':''}" data-filter="regular">منتظم</button>
+        <button class="chip ${filterCategory==='late'?'active':''}" data-filter="late">متأخر</button>
+        <button class="chip ${filterCategory==='blacklist'?'active':''}" data-filter="blacklist">قائمة سوداء</button>
+      </div>
+      <div class="search-box" style="overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
+        <button class="chip ${sortBy==='recent'?'active':''}" data-sort="recent">الأحدث</button>
+        <button class="chip ${sortBy==='amount'?'active':''}" data-sort="amount">الأعلى ديناً</button>
+        <button class="chip ${sortBy==='name'?'active':''}" data-sort="name">الاسم</button>
+      </div>
+      <div id="customersList">
+        ${list.length ? list.map(customerCardHTML).join('') :
+          `<div class="empty"><div class="empty-icon">👥</div><h3>لا يوجد زبائن</h3><p>اضغط "زبون" لإضافة أول زبون</p></div>`}
+      </div>
+    </div>`;
+
+  document.getElementById('addCustomer').onclick = ()=>openCustomerModal();
+  const si = document.getElementById('searchInput');
+  si.oninput = e => { searchQuery = e.target.value; renderCustomers(el); setTimeout(()=>{const s=document.getElementById('searchInput'); if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0); };
+  el.querySelectorAll('[data-filter]').forEach(b=> b.onclick = ()=>{ filterCategory = b.dataset.filter; render(); });
+  el.querySelectorAll('[data-sort]').forEach(b=> b.onclick = ()=>{ sortBy = b.dataset.sort; render(); });
+  el.querySelectorAll('[data-customer]').forEach(c=> c.onclick = ()=>{ currentCustomerId = c.dataset.customer; render(); });
+}
+
+function customerCardHTML(c){
+  const rem = customerRemaining(c);
+  const paid = customerPaid(c);
+  const total = customerTotal(c);
+  const pct = total>0 ? Math.round(paid/total*100) : 0;
+  const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
+  const catClass = c.category||'regular';
+  const hasOverdue = c.debts.some(debtIsOverdue);
+  return `
+    <div class="customer-card" data-customer="${c.id}">
+      <div class="customer-head">
+        <div>
+          <div class="customer-name">
+            ${escapeHtml(c.name)}
+            <span class="badge badge-${catClass}">${catLabel}</span>
+            ${hasOverdue?'<span class="badge badge-overdue">متأخر</span>':''}
+          </div>
+          ${c.phone?`<div class="customer-meta"><span>📞 ${escapeHtml(c.phone)}</span></div>`:''}
+        </div>
+        <div class="customer-amount ${rem===0?'paid':''}">${rem===0?'✓ مسدد':fmt(rem)+' '+cur()}</div>
+      </div>
+      ${total>0?`
+        <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <div class="customer-meta" style="margin-top:6px">
+          <span>مسدد: ${fmt(paid)}</span>
+          <span>الكل: ${fmt(total)}</span>
+          <span>${c.debts.length} دين</span>
+        </div>`:''}
+    </div>`;
+}
+
+/* ============================================================
+   تفاصيل الزبون
+   ============================================================ */
+function renderCustomerDetail(el){
+  const c = findCustomer(currentCustomerId);
+  if(!c){ currentCustomerId=null; return render(); }
+  const rem = customerRemaining(c);
+  const paid = customerPaid(c);
+  const total = customerTotal(c);
+  const pct = total>0 ? Math.round(paid/total*100) : 0;
+  const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
+
+  el.innerHTML = `
+    <div class="screen">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-ghost" id="backBtn">→ رجوع</button>
+      </div>
+      <div class="card">
+        <div class="customer-head">
+          <div>
+            <div class="customer-name" style="font-size:20px">${escapeHtml(c.name)}
+              <span class="badge badge-${c.category||'regular'}">${catLabel}</span>
+            </div>
+            ${c.phone?`<div class="customer-meta" style="margin-top:6px"><span>📞 ${escapeHtml(c.phone)}</span></div>`:''}
+            ${c.note?`<div class="customer-meta" style="margin-top:4px"><span>📝 ${escapeHtml(c.note)}</span></div>`:''}
+          </div>
+        </div>
+        <div class="stat-grid" style="margin-top:16px;margin-bottom:0">
+          <div class="stat-card danger"><div class="stat-label">المتبقي</div><div class="stat-value danger">${fmt(rem)} ${cur()}</div></div>
+          <div class="stat-card"><div class="stat-label">المسدد</div><div class="stat-value success">${fmt(paid)} ${cur()}</div></div>
+        </div>
+        ${total>0?`<div class="progress" style="margin-top:16px"><div class="progress-bar" style="width:${pct}%"></div></div>`:''}
+      </div>
+
+      <div class="section-header" style="margin-top:16px">
+        <div class="section-title">الديون (${c.debts.length})</div>
+        <button class="btn btn-primary btn-sm" id="addDebt">➕ دين</button>
+      </div>
+      <div id="debtsList">
+        ${c.debts.length ? [...c.debts].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(d=>debtRowHTML(d,c.id)).join('') :
+          `<div class="empty"><div class="empty-icon">📝</div><h3>لا توجد ديون</h3><p>أضف أول دين لهذا الزبون</p></div>`}
+      </div>
+
+      <div class="section-header" style="margin-top:16px">
+        <div class="section-title">إجراءات</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="printBtn">🖨️ كشف حساب</button>
+        <button class="btn btn-ghost" id="editBtn">✏️ تعديل</button>
+        <button class="btn btn-danger" id="deleteBtn">🗑️ حذف</button>
+      </div>
+    </div>`;
+
+  document.getElementById('backBtn').onclick = ()=>{ currentCustomerId=null; render(); };
+  document.getElementById('addDebt').onclick = ()=>openDebtModal(c.id);
+  document.getElementById('editBtn').onclick = ()=>openCustomerModal(c);
+  document.getElementById('deleteBtn').onclick = ()=>deleteCustomer(c.id);
+  document.getElementById('printBtn').onclick = ()=>printStatement(c.id);
+
+  el.querySelectorAll('[data-debt-pay]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    openPaymentModal(c.id, b.dataset.debtPay);
+  });
+  el.querySelectorAll('[data-debt-edit]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    openDebtModal(c.id, b.dataset.debtEdit);
+  });
+  el.querySelectorAll('[data-debt-del]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    if(confirm('حذف هذا الدين؟')){
+      const cc = findCustomer(c.id);
+      cc.debts = cc.debts.filter(d=>d.id!==b.dataset.debtDel);
+      saveDB(); render();
+    }
+  });
+}
+
+function debtRowHTML(d, cid){
+  const rem = debtRemaining(d);
+  const total = debtTotal(d);
+  const paid = debtPaid(d);
+  const pct = total>0 ? Math.round(paid/total*100) : 0;
+  const overdue = debtIsOverdue(d);
+  const isPaid = debtIsPaid(d);
+  const dueTxt = d.dueDate ? new Date(d.dueDate).toLocaleDateString('ar-EG') : '—';
+  return `
+    <div class="debt-item ${overdue?'overdue':''} ${isPaid?'paid':''}">
+      <div class="debt-head">
+        <div class="debt-desc">${escapeHtml(d.description||'دين')}</div>
+        <div class="debt-amount">${isPaid?'✓ مسدد':fmt(rem)+' '+cur()}</div>
+      </div>
+      <div class="debt-info">
+        <span>💰 ${fmt(total)} ${cur()}</span>
+        <span>✅ ${fmt(paid)}</span>
+        <span>📅 ${dueTxt}</span>
+        ${overdue?'<span class="badge badge-overdue">متأخر</span>':''}
+      </div>
+      <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <div class="debt-actions" style="margin-top:10px">
+        ${!isPaid?`<button class="btn btn-primary btn-sm" data-debt-pay="${d.id}">💵 دفعة</button>`:''}
+        <button class="btn btn-ghost btn-sm" data-debt-edit="${d.id}">✏️ تعديل</button>
+        <button class="btn btn-ghost btn-sm" data-debt-del="${d.id}">🗑️</button>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   التنبيهات
+   ============================================================ */
+function renderReminders(el){
+  const days = DB.settings.reminderDays||3;
+  const overdue = [], upcoming = [];
+  allCustomers().forEach(c=>{
+    c.debts.forEach(d=>{
+      if(debtIsOverdue(d)) overdue.push({c,d});
+      else if(debtIsUpcoming(d, days)) upcoming.push({c,d});
+    });
+  });
+
+  el.innerHTML = `
+    <div class="screen">
+      <div class="section-title" style="margin-bottom:12px">🔔 التنبيهات</div>
+      <div class="stat-grid">
+        <div class="stat-card danger">
+          <div class="stat-label">ديون متأخرة</div>
+          <div class="stat-value">${overdue.length}</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">تستحق خلال ${days} أيام</div>
+          <div class="stat-value">${upcoming.length}</div>
+        </div>
+      </div>
+
+      <div class="section-header"><div class="section-title">⏰ متأخرة</div></div>
+      ${overdue.length ? overdue.map(({c,d})=>reminderCardHTML(c,d,true)).join('') :
+        '<div class="empty"><div class="empty-icon">✓</div><h3>لا توجد ديون متأخرة</h3></div>'}
+
+      <div class="section-header" style="margin-top:16px"><div class="section-title">📅 قريبة الاستحقاق</div></div>
+      ${upcoming.length ? upcoming.map(({c,d})=>reminderCardHTML(c,d,false)).join('') :
+        '<div class="empty"><div class="empty-icon">✓</div><h3>لا توجد ديون قريبة</h3></div>'}
+    </div>`;
+
+  el.querySelectorAll('[data-go-customer]').forEach(x=> x.onclick = ()=>{
+    currentCustomerId = x.dataset.goCustomer; render();
+  });
+}
+
+function reminderCardHTML(c, d, overdue){
+  return `
+    <div class="customer-card" data-go-customer="${c.id}">
+      <div class="customer-head">
+        <div>
+          <div class="customer-name">${escapeHtml(c.name)}
+            ${overdue?'<span class="badge badge-overdue">متأخر</span>':'<span class="badge badge-late">قريب</span>'}
+          </div>
+          <div class="customer-meta"><span>📝 ${escapeHtml(d.description||'دين')}</span></div>
+          <div class="customer-meta"><span>📅 ${new Date(d.dueDate).toLocaleDateString('ar-EG')}</span></div>
+        </div>
+        <div class="customer-amount">${fmt(debtRemaining(d))} ${cur()}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   النسخ الاحتياطي
+   ============================================================ */
+function renderBackup(el){
+  el.innerHTML = `
+    <div class="screen">
+      <div class="section-title" style="margin-bottom:12px">☁️ النسخ الاحتياطي</div>
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:8px">📤 تصدير البيانات</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+          حفظ نسخة من كل بياناتك في ملف JSON آمن على جهازك.
+        </p>
+        <button class="btn btn-primary btn-block" id="exportBtn">📥 تنزيل ملف النسخة</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:8px">📥 استيراد البيانات</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+          ⚠️ سيتم استبدال البيانات الحالية بالكامل.
+        </p>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+        <button class="btn btn-ghost btn-block" id="importBtn">📂 اختيار ملف</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:8px">🗑️ حذف كل البيانات</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+          عملية لا يمكن التراجع عنها. تأكد من النسخ الاحتياطي أولاً.
+        </p>
+        <button class="btn btn-danger btn-block" id="clearBtn">حذف كل شيء</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:8px">📊 إحصائيات</h3>
+        <div class="customer-meta" style="font-size:14px">
+          <div>الزبائن: <b>${DB.customers.length}</b></div>
+          <div>حجم البيانات: <b>${(JSON.stringify(DB).length/1024).toFixed(1)} KB</b></div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('exportBtn').onclick = exportData;
+  document.getElementById('importBtn').onclick = ()=>document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange = importData;
+  document.getElementById('clearBtn').onclick = ()=>{
+    if(confirm('هل أنت متأكد من حذف كل البيانات؟ لا يمكن التراجع!')){
+      if(confirm('تأكيد نهائي: سيتم حذف كل الزبائن والديون!')){
+        DB = defaultData(); saveDB(); toast('تم حذف كل البيانات'); render();
+      }
+    }
+  };
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `daftar-diyoun-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('✓ تم تصدير النسخة الاحتياطية');
+}
+
+function importData(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if(!data.customers || !Array.isArray(data.customers)) throw new Error('ملف غير صالح');
+      if(confirm('استيراد البيانات؟ سيتم استبدال البيانات الحالية.')){
+        DB = { customers:data.customers, settings:{...defaultData().settings,...(data.settings||{})} };
+        saveDB(); toast('✓ تم استيراد البيانات'); render();
+      }
+    } catch(err){ alert('ملف غير صالح: '+err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+/* ============================================================
+   الإعدادات
+   ============================================================ */
+function renderSettings(el){
+  el.innerHTML = `
+    <div class="screen">
+      <div class="section-title" style="margin-bottom:12px">⚙️ الإعدادات</div>
+
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">💱 رمز العملة</label>
+          <input class="form-input" id="curInput" value="${escapeHtml(DB.settings.currency)}" placeholder="مثال: د.ل، ر.س، $">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">🔔 عدد أيام التنبيه المسبق</label>
+          <input class="form-input" id="remInput" type="number" min="1" max="30" value="${DB.settings.reminderDays}">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">🌙 الوضع الليلي</label>
+          <button class="btn btn-ghost btn-block" id="toggleTheme">
+            ${DB.settings.darkMode?'☀️ تبديل إلى الوضع النهاري':'🌙 تبديل إلى الوضع الليلي'}
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="saveSettings">💾 حفظ الإعدادات</button>
+
+      <div style="text-align:center;margin-top:24px;color:var(--text-muted);font-size:12px">
+        دفتر الديون Pro — الإصدار 2.0<br>
+        يعمل بدون إنترنت • بياناتك على جهازك فقط
+      </div>
+    </div>`;
+
+  document.getElementById('toggleTheme').onclick = ()=>{
+    DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme(); render();
+  };
+  document.getElementById('saveSettings').onclick = ()=>{
+    const c = document.getElementById('curInput').value.trim() || 'د.ل';
+    const r = Math.max(1, Math.min(30, parseInt(document.getElementById('remInput').value)||3));
+    DB.settings.currency = c; DB.settings.reminderDays = r;
+    saveDB(); toast('✓ تم حفظ الإعدادات'); render();
+  };
+}
+
+/* ============================================================
+   Modal — زبون
+   ============================================================ */
+function openCustomerModal(c){
+  const editing = !!c;
+  const data = c || { name:'', phone:'', note:'', category:'regular' };
+  showModal(editing?'✏️ تعديل زبون':'➕ زبون جديد', `
+    <div class="form-group">
+      <label class="form-label">الاسم *</label>
+      <input class="form-input" id="cName" value="${escapeHtml(data.name)}" placeholder="اسم الزبون" autofocus>
+    </div>
+    <div class="form-group">
+      <label class="form-label">رقم الهاتف</label>
+      <input class="form-input" id="cPhone" value="${escapeHtml(data.phone||'')}" placeholder="اختياري" type="tel">
+    </div>
+    <div class="form-group">
+      <label class="form-label">التصنيف</label>
+      <select class="form-select" id="cCat">
+        <option value="regular" ${data.category==='regular'?'selected':''}>🟢 منتظم</option>
+        <option value="late" ${data.category==='late'?'selected':''}>🟡 متأخر</option>
+        <option value="blacklist" ${data.category==='blacklist'?'selected':''}>🔴 قائمة سوداء</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ملاحظات</label>
+      <textarea class="form-textarea" id="cNote" placeholder="اختياري">${escapeHtml(data.note||'')}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" id="saveCustomer">${editing?'حفظ':'إضافة'}</button>
+    </div>
+  `);
+  document.getElementById('saveCustomer').onclick = ()=>{
+    const name = document.getElementById('cName').value.trim();
+    if(!name) return alert('أدخل الاسم');
+    const obj = {
+      name,
+      phone: document.getElementById('cPhone').value.trim(),
+      category: document.getElementById('cCat').value,
+      note: document.getElementById('cNote').value.trim()
+    };
+    if(editing){
+      Object.assign(c, obj);
+    } else {
+      DB.customers.push({ id: uid(), createdAt: Date.now(), archived:false, debts:[], ...obj });
+    }
+    saveDB(); closeModal(); render(); toast(editing?'✓ تم التعديل':'✓ تمت الإضافة');
+  };
+}
+
+function deleteCustomer(id){
+  if(!confirm('حذف الزبون وكل ديونه؟ لا يمكن التراجع.')) return;
+  DB.customers = DB.customers.filter(c=>c.id!==id);
+  saveDB(); currentCustomerId=null; render(); toast('✓ تم الحذف');
+}
+
+/* ============================================================
+   Modal — دين
+   ============================================================ */
+function openDebtModal(customerId, debtId){
+  const c = findCustomer(customerId);
+  if(!c) return;
+  const editing = !!debtId;
+  const d = editing ? c.debts.find(x=>x.id===debtId) : null;
+  const data = d || { description:'', amount:'', paid:0, dueDate:'', note:'' };
+
+  showModal(editing?'✏️ تعديل دين':'➕ دين جديد', `
+    <div class="form-group">
+      <label class="form-label">الوصف</label>
+      <input class="form-input" id="dDesc" value="${escapeHtml(data.description||'')}" placeholder="مثال: بضاعة، سلفة...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">المبلغ *</label>
+        <input class="form-input" id="dAmount" type="number" step="0.01" min="0" value="${data.amount}" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">المدفوع مسبقاً</label>
+        <input class="form-input" id="dPaid" type="number" step="0.01" min="0" value="${data.paid||0}" ${editing?'':'readonly'} placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">موعد الاستحقاق</label>
+      <input class="form-input" id="dDue" type="date" value="${data.dueDate||''}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ملاحظات</label>
+      <textarea class="form-textarea" id="dNote" placeholder="اختياري">${escapeHtml(data.note||'')}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" id="saveDebt">${editing?'حفظ':'إضافة'}</button>
+    </div>
+  `);
+
+  document.getElementById('saveDebt').onclick = ()=>{
+    const amount = parseFloat(document.getElementById('dAmount').value)||0;
+    if(amount<=0) return alert('أدخل مبلغاً صحيحاً');
+    const paid = editing ? (parseFloat(document.getElementById('dPaid').value)||0) : 0;
+    const obj = {
+      description: document.getElementById('dDesc').value.trim(),
+      amount, paid,
+      dueDate: document.getElementById('dDue').value || '',
+      note: document.getElementById('dNote').value.trim()
+    };
+    if(editing){
+      Object.assign(d, obj);
+    } else {
+      c.debts.push({ id:uid(), createdAt:Date.now(), payments:[], ...obj });
+    }
+    saveDB(); closeModal(); render(); toast(editing?'✓ تم التعديل':'✓ تمت إضافة الدين');
+  };
+}
+
+/* ============================================================
+   Modal — دفعة
+   ============================================================ */
+function openPaymentModal(customerId, debtId){
+  const c = findCustomer(customerId);
+  const d = c.debts.find(x=>x.id===debtId);
+  if(!d) return;
+  const rem = debtRemaining(d);
+
+  showModal('💵 تسجيل دفعة', `
+    <div class="card" style="margin-bottom:16px;background:var(--bg);box-shadow:none">
+      <div class="customer-meta" style="font-size:13px">
+        <div>الدين: <b>${escapeHtml(d.description||'دين')}</b></div>
+        <div>المتبقي: <b style="color:var(--danger)">${fmt(rem)} ${cur()}</b></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">المبلغ *</label>
+      <input class="form-input" id="pAmount" type="number" step="0.01" min="0" max="${rem}" value="${rem}" autofocus>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ملاحظة</label>
+      <input class="form-input" id="pNote" placeholder="اختياري">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" id="savePayment">✓ تسجيل</button>
+    </div>
+  `);
+
+  document.getElementById('savePayment').onclick = ()=>{
+    const amt = parseFloat(document.getElementById('pAmount').value)||0;
+    if(amt<=0) return alert('أدخل مبلغاً صحيحاً');
+    if(amt > rem + 0.001) return alert('المبلغ أكبر من المتبقي');
+    d.paid = (Number(d.paid)||0) + amt;
+    d.payments = d.payments || [];
+    d.payments.push({ id:uid(), amount:amt, date:new Date().toISOString(), note:document.getElementById('pNote').value.trim() });
+    saveDB(); closeModal(); render(); toast('✓ تم تسجيل الدفعة');
+  };
+}
+
+/* ============================================================
+   Modal — نظام عام
+   ============================================================ */
+function showModal(title, bodyHTML){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">
+          <span>${title}</span>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        ${bodyHTML}
+      </div>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  document.getElementById('modalRoot').innerHTML = '';
+  document.body.style.overflow = '';
+}
+window.closeModal = closeModal;
+
+/* ============================================================
+   طباعة كشف الحساب (PDF)
+   ============================================================ */
+function printStatement(customerId){
+  const c = findCustomer(customerId);
+  if(!c) return;
+  const total = customerTotal(c), paid = customerPaid(c), rem = customerRemaining(c);
+  const rows = c.debts.map(d=>`
+    <tr>
+      <td>${escapeHtml(d.description||'—')}</td>
+      <td>${fmt(debtTotal(d))}</td>
+      <td>${fmt(debtPaid(d))}</td>
+      <td>${fmt(debtRemaining(d))}</td>
+      <td>${d.dueDate?new Date(d.dueDate).toLocaleDateString('ar-EG'):'—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('printArea').innerHTML = `
+    <div class="print-header">
+      <h1>💰 كشف حساب</h1>
+      <p style="color:#6b7280;font-size:13px">التاريخ: ${new Date().toLocaleDateString('ar-EG')}</p>
+    </div>
+    <div style="margin-bottom:16px">
+      <p><b>الزبون:</b> ${escapeHtml(c.name)}</p>
+      ${c.phone?`<p><b>الهاتف:</b> ${escapeHtml(c.phone)}</p>`:''}
+    </div>
+    <table class="print-table">
+      <thead><tr><th>البيان</th><th>المبلغ</th><th>المسدد</th><th>المتبقي</th><th>الاستحقاق</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" style="text-align:center">لا توجد ديون</td></tr>'}</tbody>
+      <tfoot>
+        <tr class="print-total"><td>الإجمالي</td><td>${fmt(total)}</td><td>${fmt(paid)}</td><td>${fmt(rem)}</td><td></td></tr>
+      </tfoot>
+    </table>
+    <p style="text-align:left;font-size:12px;color:#6b7280">العملة: ${escapeHtml(cur())}</p>
+    <div class="print-footer">
+      تم إنشاء هذا الكشف بواسطة دفتر الديون Pro
+    </div>`;
+
+  window.print();
+}
+
+/* ============================================================
+   أدوات مساعدة
+   ============================================================ */
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+function toast(msg){
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 1800);
+}
+
+/* ============================================================
+   انطلاق التطبيق
+   ============================================================ */
+init();
+
+})();
+</script>
+</body>
+</html>
