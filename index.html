@@ -194,9 +194,16 @@ const STORAGE_KEY = 'daftar_diyoun_pro_v3';
 const USD = 'USD';
 const LBP = 'LBP';
 
+// إضافة إعدادات المحل هنا
 const defaultData = () => ({
   customers: [],
-  settings: { exchangeRate: 89500, darkMode:false, reminderDays:3 }
+  settings: { 
+    exchangeRate: 89500, 
+    darkMode: false, 
+    reminderDays: 3,
+    shopName: '',
+    shopPhone: ''
+  }
 });
 
 let DB = loadDB();
@@ -327,6 +334,9 @@ function renderDashboard(el){
         </div>
       </div>
 
+      <!-- زر تقرير المحل الجديد -->
+      <button class="btn btn-wa btn-block" id="shopReportBtn" style="margin-bottom:16px">📤 إرسال تقرير المحل للمالك</button>
+
       <div class="chart-box">
         <h3>نسبة التحصيل (بالدولار)</h3>
         <div class="chart-wrap"><canvas id="c1"></canvas></div>
@@ -341,6 +351,7 @@ function renderDashboard(el){
     </div>`;
 
   document.getElementById('addBtn').onclick = ()=>openCustomerModal();
+  document.getElementById('shopReportBtn').onclick = ()=>sendShopReport();
 
   if(chart1) chart1.destroy();
   const dctx = document.getElementById('c1');
@@ -458,7 +469,7 @@ function renderCustomerDetail(el){
 
       <div class="section-header" style="margin-top:24px"><div class="section-title">إجراءات سريعة</div></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-wa" id="waBtn" style="flex:1">📱 إرسال كشف واتساب</button>
+        <button class="btn btn-wa" id="waBtn" style="flex:1">📱 إرسال واتساب</button>
         <button class="btn btn-ghost" id="printBtn">🖨️ طباعة</button>
         <button class="btn btn-ghost" id="editBtn">✏️ تعديل</button>
         <button class="btn btn-danger" id="delBtn">🗑️ حذف</button>
@@ -475,7 +486,7 @@ function renderCustomerDetail(el){
     }
   };
   document.getElementById('printBtn').onclick = ()=>printStatement(c.id);
-  document.getElementById('waBtn').onclick = ()=>sendWhatsApp(c.id);
+  document.getElementById('waBtn').onclick = ()=>openWaOptions(c.id);
 
   el.querySelectorAll('[data-pay]').forEach(b => b.onclick = e => { e.stopPropagation(); openPaymentModal(c.id, b.dataset.pay); });
   el.querySelectorAll('[data-edit]').forEach(b => b.onclick = e => { e.stopPropagation(); openDebtModal(c.id, b.dataset.edit); });
@@ -569,11 +580,23 @@ function renderSettings(el){
     <div class="screen">
       <div class="section-title" style="margin-bottom:16px">⚙️ الإعدادات</div>
 
-      <div class="card">
+      <!-- بيانات المحل -->
+      <div class="card" style="border:2px solid var(--primary)">
+        <h3 style="font-size:15px;font-weight:800;margin-bottom:12px;color:var(--primary)">🏪 بيانات المحل (للتقارير)</h3>
         <div class="form-group">
+          <label class="form-label">اسم المحل</label>
+          <input class="form-input" id="shopNameIn" value="${escapeHtml(DB.settings.shopName)}" placeholder="مثال: سوبرماركت الأمانة">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">رقم واتساب المحل (لإرسال التقارير)</label>
+          <input class="form-input" id="shopPhoneIn" value="${escapeHtml(DB.settings.shopPhone)}" placeholder="مثال: 031234567" type="tel">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group" style="margin-bottom:0">
           <label class="form-label">💵 سعر صرف الدولار (مقابل الليرة)</label>
           <input class="form-input" id="rateIn" type="number" value="${DB.settings.exchangeRate}">
-          <div class="stat-sub" style="margin-top:8px">يُستخدم للتحويل التلقائي في التقارير والكشوفات.</div>
         </div>
       </div>
 
@@ -591,12 +614,14 @@ function renderSettings(el){
       <button class="btn btn-primary btn-block" id="save" style="margin-bottom:24px">💾 حفظ الإعدادات</button>
 
       <div style="text-align:center;color:var(--text-muted);font-size:12px;font-weight:600">
-        دفتر الديون Pro — الإصدار 3.0
+        دفتر الديون Pro — الإصدار 3.1
       </div>
     </div>`;
 
   document.getElementById('themeBtn2').onclick = ()=>{ DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme(); render(); };
   document.getElementById('save').onclick = ()=>{
+    DB.settings.shopName = document.getElementById('shopNameIn').value.trim();
+    DB.settings.shopPhone = document.getElementById('shopPhoneIn').value.trim();
     DB.settings.exchangeRate = parseFloat(document.getElementById('rateIn').value) || 89500;
     DB.settings.reminderDays = Math.max(1, parseInt(document.getElementById('remIn').value) || 3);
     saveDB(); toast('✓ تم حفظ الإعدادات'); render();
@@ -726,16 +751,45 @@ function showModal(title, html){
 function closeModal(){ document.getElementById('modalRoot').innerHTML=''; document.body.style.overflow=''; }
 window.closeModal = closeModal;
 
-/* ==================== WHATSAPP & PRINT ==================== */
-function sendWhatsApp(cId){
+/* ==================== WHATSAPP INTEGRATION ==================== */
+
+function cleanPhone(ph) {
+  let p = ph.replace(/\D/g,'');
+  if(p.startsWith('0')) p = '961' + p.substring(1); // كود لبنان
+  return p;
+}
+
+// خيارات إرسال الواتساب للزبون
+function openWaOptions(cId) {
   const c = findC(cId); if(!c) return;
-  if(!c.phone) return toast('⚠️ لا يوجد رقم هاتف');
   
-  let ph = c.phone.replace(/\D/g,'');
-  if(ph.startsWith('0')) ph = '961' + ph.substring(1); // إضافة كود لبنان
-  
+  showModal('📱 إرسال عبر واتساب', `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${c.phone ? `
+      <button class="btn btn-wa btn-block" id="waDirect" style="padding:16px;font-size:15px">
+        إرسال لرقم الزبون (${escapeHtml(c.phone)})
+      </button>` : '<div style="text-align:center;color:var(--danger);font-weight:bold;margin-bottom:10px">⚠️ لا يوجد رقم مسجل لهذا الزبون</div>'}
+      
+      <button class="btn btn-primary btn-block" id="waContact" style="padding:16px;font-size:15px">
+        اختيار جهة اتصال من الواتساب
+      </button>
+      
+      ${DB.settings.shopPhone ? `
+      <button class="btn btn-ghost btn-block" id="waShop" style="padding:16px;font-size:15px">
+        إرسال لرقم المحل (${escapeHtml(DB.settings.shopPhone)})
+      </button>` : ''}
+    </div>
+  `);
+
+  if(c.phone) document.getElementById('waDirect').onclick = ()=>sendCustomerMsg(c, cleanPhone(c.phone));
+  document.getElementById('waContact').onclick = ()=>sendCustomerMsg(c, ''); // بدون رقم يفتح قائمة جهات الاتصال
+  if(DB.settings.shopPhone) document.getElementById('waShop').onclick = ()=>sendCustomerMsg(c, cleanPhone(DB.settings.shopPhone));
+}
+
+// دالة بناء الرسالة والإرسال
+function sendCustomerMsg(c, phoneStr) {
   const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
-  let msg = `*كشف حساب - دفتر الديون* 💰\n\n`;
+  let msg = `*كشف حساب - ${DB.settings.shopName || 'دفتر الديون'}* 💰\n\n`;
   msg += `أهلاً *${c.name}* 👋\n`;
   msg += `بتاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
   msg += `سعر الصرف: 1$ = ${fmt(rate())} ل.ل\n\n`;
@@ -755,9 +809,56 @@ function sendWhatsApp(cId){
   }
   msg += `شكراً لتعاملك معنا! 🌹`;
 
-  window.open(`https://wa.me/${ph}?text=${encodeURIComponent(msg)}`, '_blank');
+  const url = phoneStr ? `https://wa.me/${phoneStr}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  closeModal();
 }
 
+// إرسال تقرير المحل الشامل
+function sendShopReport() {
+  if(!DB.settings.shopPhone) {
+    toast('⚠️ يرجى إدخال رقم المحل في الإعدادات أولاً');
+    return;
+  }
+  
+  const cs = allCustomers();
+  const remUSD = cs.reduce((s,c)=>s+cRemUSD(c),0);
+  const remLBP = cs.reduce((s,c)=>s+cRemLBP(c),0);
+  
+  let msg = `*تقرير المحل الشامل* 🏪\n`;
+  msg += `المحل: *${DB.settings.shopName || 'غير محدد'}*\n`;
+  msg += `التاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
+  msg += `سعر الصرف: 1$ = ${fmt(rate())} ل.ل\n\n`;
+  
+  msg += `📌 *الملخص المالي:*\n`;
+  msg += `إجمالي الديون المتبقية:\n`;
+  msg += `بالدولار: *${fmtCur(remUSD, USD)}*\n`;
+  msg += `بالليرة: *${fmtCur(remLBP, LBP)}*\n\n`;
+  
+  msg += `👥 *تفاصيل الزبائن المديونين:*\n`;
+  msg += `--------------------\n`;
+  
+  let count = 0;
+  cs.forEach(c => {
+    const cRemUSD = cRemUSDVal(c);
+    if(cRemUSD > 0.01) {
+      count++;
+      msg += `${count}. *${c.name}*: ${fmtCur(cRemUSDVal(c), USD)} (ما يعادل ${fmtCur(cRemLBPVal(c), LBP)})\n`;
+    }
+  });
+  
+  if(count === 0) msg += `لا توجد ديون متبقية حالياً.`;
+
+  const phone = cleanPhone(DB.settings.shopPhone);
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// دوال مساعدة لحساب المبالغ (لتجنب تكرار الكود)
+function cRemUSDVal(c) { return c.debts.reduce((s,d)=>s+toUSD(dRem(d), d.currency||USD),0); }
+function cRemLBPVal(c) { return c.debts.reduce((s,d)=>s+toLBP(dRem(d), d.currency||USD),0); }
+
+/* ==================== PRINT ==================== */
 function printStatement(cId){
   const c = findC(cId); if(!c) return;
   const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
@@ -776,7 +877,7 @@ function printStatement(cId){
 
   document.getElementById('printArea').innerHTML = `
     <div class="print-header">
-      <h1>💰 كشف حساب</h1>
+      <h1>💰 ${DB.settings.shopName || 'كشف حساب'}</h1>
       <p>التاريخ: ${new Date().toLocaleDateString('ar-EG')} | سعر الصرف: ${fmt(rate())} ل.ل</p>
     </div>
     <p style="margin-bottom:16px"><b>الزبون:</b> ${escapeHtml(c.name)} ${c.phone?'| '+escapeHtml(c.phone):''}</p>
