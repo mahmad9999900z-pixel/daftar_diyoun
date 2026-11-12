@@ -4,225 +4,181 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#10b981">
-<title>دفتر الديون Pro</title>
+<title>دفتر الديون Pro | الإصدار الاحترافي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --primary:#10b981;--primary-dark:#059669;--primary-light:#d1fae5;
-  --danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;
-  --bg:#f3f4f6;--card:#ffffff;--text:#1f2937;--text-muted:#6b7280;
-  --border:#e5e7eb;--shadow:0 4px 20px rgba(0,0,0,.08);--shadow-lg:0 10px 40px rgba(0,0,0,.15);
-  --radius:16px;--radius-sm:10px;
+  --primary:#10b981; --primary-dark:#059669; --primary-light:#ecfdf5;
+  --danger:#ef4444; --danger-light:#fef2f2;
+  --warning:#f59e0b; --warning-light:#fffbeb;
+  --info:#3b82f6; --info-light:#eff6ff;
+  --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --text-muted:#64748b;
+  --border:#e2e8f0; --shadow:0 4px 6px -1px rgba(0,0,0,.05),0 2px 4px -1px rgba(0,0,0,.03);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.05),0 4px 6px -2px rgba(0,0,0,.025);
+  --radius:16px; --radius-sm:12px;
 }
 [data-theme="dark"]{
-  --primary:#34d399;--primary-dark:#10b981;--primary-light:#064e3b;
-  --bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--text-muted:#94a3b8;
-  --border:#334155;--shadow:0 4px 20px rgba(0,0,0,.4);--shadow-lg:0 10px 40px rgba(0,0,0,.5);
+  --primary:#34d399; --primary-dark:#10b981; --primary-light:#064e3b;
+  --danger:#f87171; --danger-light:#7f1d1d;
+  --warning:#fbbf24; --warning-light:#78350f;
+  --info:#60a5fa; --info-light:#1e3a8a;
+  --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --text-muted:#94a3b8;
+  --border:#334155; --shadow:0 4px 6px -1px rgba(0,0,0,.3);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.4);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--text);
-  min-height:100vh;transition:background .3s,color .3s;padding-bottom:88px}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px}
 .hidden{display:none!important}
 
-/* ===== HEADER ===== */
-.header{position:sticky;top:0;z-index:100;background:var(--card);
-  box-shadow:0 2px 12px rgba(0,0,0,.06);padding:12px 16px}
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--card);box-shadow:var(--shadow);padding:12px 16px}
 .header-inner{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto}
-.logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800}
+.logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800}
 .logo b{color:var(--primary)}
-.logo-icon{font-size:24px}
-.header-actions{display:flex;gap:8px}
-.icon-btn{width:40px;height:40px;border:none;border-radius:12px;background:var(--bg);
-  font-size:18px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
-.icon-btn:active{transform:scale(.92)}
+.icon-btn{width:42px;height:42px;border:none;border-radius:12px;background:var(--bg);color:var(--text);font-size:20px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.icon-btn:active{transform:scale(.9)}
 
-/* ===== MAIN ===== */
+/* Main */
 .main{max-width:900px;margin:0 auto;padding:16px}
-.screen{animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.screen{animation:fadeIn .3s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* ===== CARDS ===== */
-.card{background:var(--card);border-radius:var(--radius);padding:16px;
-  box-shadow:var(--shadow);margin-bottom:12px}
+/* Cards */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--border)}
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
-  position:relative;overflow:hidden}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
 .stat-card::before{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--primary)}
 .stat-card.danger::before{background:var(--danger)}
 .stat-card.warning::before{background:var(--warning)}
 .stat-card.info::before{background:var(--info)}
-.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600}
-.stat-value{font-size:18px;font-weight:800;color:var(--text)}
+.stat-label{font-size:13px;color:var(--text-muted);margin-bottom:8px;font-weight:600}
+.stat-value{font-size:20px;font-weight:800;color:var(--text);line-height:1.3}
 .stat-value.danger{color:var(--danger)}
 .stat-value.success{color:var(--primary)}
-.stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600}
 
-/* ===== SECTION HEADER ===== */
-.section-header{display:flex;justify-content:space-between;align-items:center;
-  margin:8px 0 12px;gap:8px}
-.section-title{font-size:17px;font-weight:800}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-family:inherit;font-size:14px;
-  font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;
-  gap:6px;justify-content:center}
+/* Buttons */
+.btn{border:none;border-radius:12px;padding:12px 18px;font-family:'Cairo';font-size:14px;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{transform:scale(.96)}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3)}
 .btn-danger{background:var(--danger);color:#fff}
-.btn-ghost{background:var(--bg);color:var(--text)}
-.btn-sm{padding:8px 12px;font-size:13px}
+.btn-ghost{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.btn-wa{background:#25D366;color:#fff;box-shadow:0 4px 12px rgba(37,211,102,.3)}
 .btn-block{width:100%}
-.btn-icon{width:36px;height:36px;padding:0;border-radius:10px}
-.btn-wa{background:#dcfce7;color:#166534}
+.btn-sm{padding:8px 12px;font-size:13px;border-radius:10px}
 
-/* ===== SEARCH / FILTER ===== */
-.search-box{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.search-input{flex:1;min-width:200px;padding:12px 16px;border:2px solid var(--border);
-  border-radius:12px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;
-  transition:.2s}
-.search-input:focus{outline:none;border-color:var(--primary)}
-.chip{padding:8px 14px;border-radius:20px;border:2px solid var(--border);background:var(--card);
-  color:var(--text-muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
-  transition:.15s;white-space:nowrap}
-.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* Section Title */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px}
+.section-title{font-size:18px;font-weight:800}
 
-/* ===== CUSTOMER CARD ===== */
-.customer-card{background:var(--card);border-radius:var(--radius);padding:16px;
-  box-shadow:var(--shadow);margin-bottom:10px;cursor:pointer;transition:.15s;
-  border:2px solid transparent;position:relative}
-.customer-card:active{transform:scale(.99);border-color:var(--primary)}
+/* Customer Card */
+.customer-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;cursor:pointer;border:1px solid var(--border);transition:.2s}
+.customer-card:active{transform:scale(.98);border-color:var(--primary)}
 .customer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
-.customer-name{font-weight:800;font-size:16px;color:var(--text);display:flex;align-items:center;
-  gap:6px;flex-wrap:wrap}
-.customer-amount{font-weight:800;font-size:15px;color:var(--danger);white-space:nowrap;text-align:left}
+.customer-name{font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.customer-amount{font-weight:800;font-size:16px;color:var(--danger);text-align:left;line-height:1.4}
 .customer-amount.paid{color:var(--primary)}
-.customer-meta{display:flex;gap:12px;font-size:12px;color:var(--text-muted);margin-top:6px}
-.customer-meta span{display:flex;align-items:center;gap:4px}
+.customer-meta{display:flex;gap:12px;font-size:12px;color:var(--text-muted);margin-top:8px}
 
-.badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-.badge-regular{background:#d1fae5;color:#059669}
-.badge-late{background:#fef3c7;color:#d97706}
-.badge-blacklist{background:#fee2e2;color:#dc2626}
-.badge-overdue{background:#fee2e2;color:#dc2626}
-.badge-paid{background:#d1fae5;color:#059669}
-.badge-usd{background:#e0f2fe;color:#0369a1}
-.badge-lbp{background:#fef3c7;color:#b45309}
-[data-theme="dark"] .badge-regular{background:#064e3b;color:#34d399}
-[data-theme="dark"] .badge-late{background:#78350f;color:#fbbf24}
-[data-theme="dark"] .badge-blacklist{background:#7f1d1d;color:#fca5a5}
-[data-theme="dark"] .badge-overdue{background:#7f1d1d;color:#fca5a5}
-[data-theme="dark"] .badge-paid{background:#064e3b;color:#34d399}
-[data-theme="dark"] .badge-usd{background:#0c4a6e;color:#7dd3fc}
-[data-theme="dark"] .badge-lbp{background:#78350f;color:#fbbf24}
+/* Badges */
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-regular{background:var(--primary-light);color:var(--primary-dark)}
+.badge-late{background:var(--warning-light);color:var(--warning)}
+.badge-blacklist{background:var(--danger-light);color:var(--danger)}
+.badge-usd{background:var(--info-light);color:var(--info)}
+.badge-lbp{background:var(--warning-light);color:var(--warning)}
 
-/* ===== PROGRESS BAR ===== */
-.progress{height:8px;background:var(--bg);border-radius:8px;overflow:hidden;margin-top:8px}
-.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),#34d399);
-  border-radius:8px;transition:width .4s}
+/* Progress */
+.progress{height:8px;background:var(--bg);border-radius:10px;overflow:hidden;margin-top:12px}
+.progress-bar{height:100%;background:var(--primary);border-radius:10px;transition:width .5s ease}
 
-/* ===== DEBT ROW ===== */
-.debt-item{background:var(--card);border-radius:var(--radius-sm);padding:14px;
-  margin-bottom:10px;box-shadow:var(--shadow);border-right:4px solid var(--primary)}
+/* Debt Item */
+.debt-item{background:var(--card);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border-right:4px solid var(--primary);border-top:1px solid var(--border);border-left:1px solid var(--border);border-bottom:1px solid var(--border)}
 .debt-item.overdue{border-right-color:var(--danger)}
-.debt-item.paid{border-right-color:var(--text-muted);opacity:.7}
-.debt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
-.debt-desc{font-weight:700;font-size:14px;flex:1}
-.debt-amount{font-weight:800;font-size:14px;color:var(--danger)}
-.debt-item.paid .debt-amount{color:var(--primary)}
-.debt-info{display:flex;gap:12px;font-size:12px;color:var(--text-muted);margin-bottom:8px;flex-wrap:wrap}
-.debt-actions{display:flex;gap:6px;flex-wrap:wrap}
+.debt-item.paid{border-right-color:var(--text-muted);opacity:.8}
+.debt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.debt-desc{font-weight:800;font-size:15px}
+.debt-amount{font-weight:800;font-size:15px;color:var(--danger)}
+.debt-info{display:flex;gap:12px;font-size:12px;color:var(--text-muted);margin-bottom:10px;flex-wrap:wrap}
+.debt-actions{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ===== EMPTY ===== */
-.empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
-.empty-icon{font-size:56px;margin-bottom:12px;opacity:.6}
-.empty h3{font-size:16px;margin-bottom:4px;color:var(--text)}
-.empty p{font-size:13px}
-
-/* ===== BOTTOM NAV ===== */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
-  box-shadow:0 -2px 20px rgba(0,0,0,.08);display:flex;justify-content:space-around;
-  padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:100;max-width:100%}
-.nav-btn{flex:1;border:none;background:none;color:var(--text-muted);padding:6px 4px;
-  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
-  font-family:inherit;transition:.15s;position:relative;border-radius:10px}
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);box-shadow:0 -4px 12px rgba(0,0,0,.05);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:100;border-top:1px solid var(--border)}
+.nav-btn{flex:1;border:none;background:none;color:var(--text-muted);padding:8px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Cairo';transition:.2s;border-radius:10px}
 .nav-btn.active{color:var(--primary)}
-.nav-btn.active .nav-icon{transform:scale(1.15)}
-.nav-icon{font-size:20px;transition:.15s}
-.nav-label{font-size:10px;font-weight:700}
-.nav-badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--danger);color:#fff;
-  font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;
-  justify-content:center;padding:0 4px;font-weight:800}
+.nav-icon{font-size:22px}
+.nav-label{font-size:11px;font-weight:700}
+.nav-badge{position:absolute;top:4px;right:calc(50% - 18px);background:var(--danger);color:#fff;font-size:10px;min-width:18px;height:18px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800}
 
-/* ===== MODAL ===== */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;
-  display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
-.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:500px;
-  max-height:90vh;overflow-y:auto;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
-  animation:slideUp .3s;position:relative}
+/* Modals & Forms */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px 20px calc(24px + env(safe-area-inset-bottom));animation:slideUp .3s cubic-bezier(0.4, 0, 0.2, 1)}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
-.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:-8px auto 16px}
-.modal-title{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{width:32px;height:32px;border:none;border-radius:50%;background:var(--bg);
-  color:var(--text);font-size:16px;cursor:pointer}
+.modal-handle{width:40px;height:5px;background:var(--border);border-radius:5px;margin:-10px auto 20px}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{width:36px;height:36px;border:none;border-radius:50%;background:var(--bg);color:var(--text);font-size:18px;cursor:pointer}
 
-/* ===== FORM ===== */
 .form-group{margin-bottom:16px}
-.form-label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)}
-.form-input,.form-select,.form-textarea{width:100%;padding:12px 14px;border:2px solid var(--border);
-  border-radius:12px;background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;transition:.2s}
+.form-label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+.form-input,.form-select,.form-textarea{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-family:'Cairo';font-size:14px;transition:.2s;font-weight:600}
 .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary);background:var(--card)}
-.form-textarea{resize:vertical;min-height:70px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-row-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
-.form-actions{display:flex;gap:8px;margin-top:20px}
+.form-actions{display:flex;gap:12px;margin-top:24px}
 .form-actions .btn{flex:1}
 
-/* ===== CHART ===== */
-.chart-box{background:var(--card);border-radius:var(--radius);padding:16px;
-  box-shadow:var(--shadow);margin-bottom:12px}
-.chart-box h3{font-size:14px;font-weight:800;margin-bottom:12px}
-.chart-wrap{position:relative;height:200px}
+/* Charts */
+.chart-box{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--border)}
+.chart-box h3{font-size:15px;font-weight:800;margin-bottom:16px}
+.chart-wrap{position:relative;height:220px}
 
-/* ===== TOAST ===== */
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--text);
-  color:var(--card);padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;
-  z-index:9999;box-shadow:var(--shadow-lg);animation:toastIn .3s}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+/* Empty State */
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-icon{font-size:64px;margin-bottom:16px;opacity:.5}
+.empty h3{font-size:18px;margin-bottom:8px;color:var(--text)}
 
-/* ===== PRINT ===== */
+/* Search */
+.search-input{width:100%;padding:14px 18px;border:2px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-family:'Cairo';font-size:14px;font-weight:600}
+.search-input:focus{outline:none;border-color:var(--primary)}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--card);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);animation:toastIn .3s}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Print */
 .print-area{display:none}
 @media print{
   body>*{display:none!important}
-  .print-area{display:block!important;padding:20px;font-family:'Cairo',sans-serif}
-  .print-header{text-align:center;border-bottom:3px solid #10b981;padding-bottom:12px;margin-bottom:20px}
-  .print-header h1{font-size:22px;color:#10b981}
+  .print-area{display:block!important;padding:20px;font-family:'Cairo'}
+  .print-header{text-align:center;border-bottom:2px solid #10b981;padding-bottom:16px;margin-bottom:20px}
+  .print-header h1{font-size:24px;color:#10b981}
   .print-table{width:100%;border-collapse:collapse;margin:16px 0}
-  .print-table th,.print-table td{border:1px solid #ddd;padding:8px;text-align:right;font-size:13px}
-  .print-table th{background:#f3f4f6;font-weight:700}
-  .print-total{background:#10b981;color:#fff;font-weight:800;font-size:16px}
-  .print-footer{text-align:center;margin-top:24px;color:#6b7280;font-size:12px}
+  .print-table th,.print-table td{border:1px solid #cbd5e1;padding:10px;text-align:right;font-size:14px}
+  .print-table th{background:#f8fafc;font-weight:800}
+  .print-total{background:#10b981;color:#fff;font-weight:800}
 }
 </style>
 </head>
 <body>
 
-<!-- التطبيق الرئيسي -->
-<div id="app" class="app">
+<div id="app">
   <header class="header">
     <div class="header-inner">
-      <div class="logo"><span class="logo-icon">💰</span><span class="logo-text">دفتر الديون <b>Pro</b></span></div>
-      <div class="header-actions">
-        <button class="icon-btn" id="themeBtn" title="الوضع الليلي">🌙</button>
+      <div class="logo"><span>💰</span> دفتر الديون <b>Pro</b></div>
+      <div>
+        <button class="icon-btn" id="themeBtn">🌙</button>
       </div>
     </div>
   </header>
+  
   <main id="mainContent" class="main"></main>
+  
   <nav class="bottom-nav">
     <button class="nav-btn active" data-screen="dashboard"><span class="nav-icon">📊</span><span class="nav-label">الرئيسية</span></button>
     <button class="nav-btn" data-screen="customers"><span class="nav-icon">👥</span><span class="nav-label">الزبائن</span></button>
     <button class="nav-btn" data-screen="reminders"><span class="nav-icon">🔔</span><span class="nav-label">التنبيهات</span><span class="nav-badge hidden" id="reminderBadge">0</span></button>
-    <button class="nav-btn" data-screen="backup"><span class="nav-icon">☁️</span><span class="nav-label">النسخ</span></button>
     <button class="nav-btn" data-screen="settings"><span class="nav-icon">⚙️</span><span class="nav-label">الإعدادات</span></button>
   </nav>
 </div>
@@ -234,11 +190,10 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 (function(){
 'use strict';
 
-const STORAGE_KEY = 'daftar_diyoun_pro_v1';
+const STORAGE_KEY = 'daftar_diyoun_pro_v3';
 const USD = 'USD';
 const LBP = 'LBP';
 
-// إعدادات افتراضية (سعر الصرف الافتراضي 89500)
 const defaultData = () => ({
   customers: [],
   settings: { exchangeRate: 89500, darkMode:false, reminderDays:3 }
@@ -247,100 +202,75 @@ const defaultData = () => ({
 let DB = loadDB();
 let currentScreen = 'dashboard';
 let currentCustomerId = null;
-let searchQuery = '', filterCategory = 'all', sortBy = 'recent';
-let dashChart = null, topChart = null;
+let searchQuery = '';
+let chart1 = null, chart2 = null;
 
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultData();
     const p = JSON.parse(raw);
-    // في حال كان هناك إصدار قديم، نقوم بتحديث الإعدادات
-    return { 
-      customers:p.customers||[], 
-      settings:{...defaultData().settings, ...(p.settings||{})} 
-    };
+    return { customers:p.customers||[], settings:{...defaultData().settings, ...(p.settings||{})} };
   } catch(e){ return defaultData(); }
 }
 function saveDB(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
-function fmt(n){ return (Number(n)||0).toLocaleString('ar-EG',{maximumFractionDigits:2}); }
+function fmt(n){ return (Number(n)||0).toLocaleString('en-US',{maximumFractionDigits:2}); }
 function rate(){ return Number(DB.settings.exchangeRate) || 89500; }
 
-// دوال العملة
-function getCurrencySymbol(curr) {
-  return curr === USD ? '$' : 'ل.ل';
-}
-function fmtCurrency(amount, curr) {
-  if(curr === USD) return '$' + fmt(amount);
-  return fmt(amount) + ' ل.ل';
-}
-function toUSD(amount, curr) {
-  return curr === LBP ? amount / rate() : amount;
-}
-function toLBP(amount, curr) {
-  return curr === USD ? amount * rate() : amount;
-}
+// Currency Helpers
+function getCurSymbol(c){ return c === USD ? '$' : 'ل.ل'; }
+function fmtCur(amt, cur){ return cur === USD ? '$' + fmt(amt) : fmt(amt) + ' ل.ل'; }
+function toUSD(amt, cur){ return cur === LBP ? amt / rate() : amt; }
+function toLBP(amt, cur){ return cur === USD ? amt * rate() : amt; }
 
-// الحسابات
-const debtTotal = d => Number(d.amount)||0;
-const debtPaid  = d => Number(d.paid)||0;
-const debtRemaining = d => Math.max(0, debtTotal(d)-debtPaid(d));
-const debtIsPaid = d => debtRemaining(d) <= 0;
-const debtIsOverdue = d => {
-  if(debtIsPaid(d) || !d.dueDate) return false;
-  return new Date(d.dueDate) < new Date(new Date().toDateString());
-};
-const debtIsUpcoming = (d, days) => {
-  if(debtIsPaid(d) || !d.dueDate) return false;
+// Debt Calculations
+const dTotal = d => Number(d.amount)||0;
+const dPaid  = d => Number(d.paid)||0;
+const dRem   = d => Math.max(0, dTotal(d)-dPaid(d));
+const isPaid = d => dRem(d) <= 0;
+const isOverdue = d => !isPaid(d) && d.dueDate && new Date(d.dueDate) < new Date(new Date().toDateString());
+const isUpcoming = (d, days) => {
+  if(isPaid(d) || !d.dueDate) return false;
   const diff = Math.ceil((new Date(d.dueDate) - new Date(new Date().toDateString()))/(86400000));
   return diff >= 0 && diff <= days;
 };
 
-// حسابات الزبون (تحويل الكل للدولار أو الليرة)
-const customerRemainingUSD = c => c.debts.reduce((s,d)=>s+toUSD(debtRemaining(d), d.currency||USD),0);
-const customerRemainingLBP = c => c.debts.reduce((s,d)=>s+toLBP(debtRemaining(d), d.currency||USD),0);
-
-const customerTotalUSD     = c => c.debts.reduce((s,d)=>s+toUSD(debtTotal(d), d.currency||USD),0);
-const customerTotalLBP     = c => c.debts.reduce((s,d)=>s+toLBP(debtTotal(d), d.currency||USD),0);
-
-const customerPaidUSD      = c => c.debts.reduce((s,d)=>s+toUSD(debtPaid(d), d.currency||USD),0);
-const customerPaidLBP      = c => c.debts.reduce((s,d)=>s+toLBP(debtPaid(d), d.currency||USD),0);
+// Customer Calculations
+const cRemUSD = c => c.debts.reduce((s,d)=>s+toUSD(dRem(d), d.currency||USD),0);
+const cRemLBP = c => c.debts.reduce((s,d)=>s+toLBP(dRem(d), d.currency||USD),0);
+const cPaidUSD = c => c.debts.reduce((s,d)=>s+toUSD(dPaid(d), d.currency||USD),0);
+const cTotalUSD = c => c.debts.reduce((s,d)=>s+toUSD(dTotal(d), d.currency||USD),0);
 
 function allCustomers(){ return DB.customers.filter(c=>!c.archived); }
-function findCustomer(id){ return DB.customers.find(c=>c.id===id); }
+function findC(id){ return DB.customers.find(c=>c.id===id); }
 
 function reminderCount(){
   const days = DB.settings.reminderDays||3;
   let n = 0;
   allCustomers().forEach(c => c.debts.forEach(d => {
-    if(debtIsOverdue(d) || debtIsUpcoming(d, days)) n++;
+    if(isOverdue(d) || isUpcoming(d, days)) n++;
   }));
   return n;
 }
 
 function init(){
   applyTheme();
-  attachGlobalEvents();
+  document.getElementById('themeBtn').onclick = ()=>{
+    DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme();
+  };
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.onclick = ()=>{ currentScreen = btn.dataset.screen; currentCustomerId=null; render(); };
+  });
   render();
 }
 
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', DB.settings.darkMode?'dark':'light');
-  const btn = document.getElementById('themeBtn');
-  if(btn) btn.textContent = DB.settings.darkMode?'☀️':'🌙';
+  document.getElementById('themeBtn').textContent = DB.settings.darkMode?'☀️':'🌙';
 }
 
-function attachGlobalEvents(){
-  document.querySelectorAll('.nav-btn').forEach(btn=>{
-    btn.onclick = ()=>{ currentScreen = btn.dataset.screen; currentCustomerId=null; render(); };
-  });
-  document.getElementById('themeBtn').onclick = ()=>{
-    DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme();
-  };
-}
-
-function setActiveNav(){
+function render(){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.screen===currentScreen && !currentCustomerId);
   });
@@ -348,725 +278,498 @@ function setActiveNav(){
   const badge = document.getElementById('reminderBadge');
   if(n>0){ badge.textContent = n; badge.classList.remove('hidden'); }
   else badge.classList.add('hidden');
-}
 
-function render(){
-  setActiveNav();
   const main = document.getElementById('mainContent');
   if(currentCustomerId) return renderCustomerDetail(main);
   switch(currentScreen){
     case 'dashboard': return renderDashboard(main);
     case 'customers': return renderCustomers(main);
     case 'reminders': return renderReminders(main);
-    case 'backup': return renderBackup(main);
     case 'settings': return renderSettings(main);
   }
 }
 
+/* ==================== DASHBOARD ==================== */
 function renderDashboard(el){
   const cs = allCustomers();
-  const totalRemainingUSD = cs.reduce((s,c)=>s+customerRemainingUSD(c),0);
-  const totalRemainingLBP = cs.reduce((s,c)=>s+customerRemainingLBP(c),0);
-  const totalPaidUSD      = cs.reduce((s,c)=>s+customerPaidUSD(c),0);
-  const totalPaidLBP      = cs.reduce((s,c)=>s+customerPaidLBP(c),0);
-  const totalAllUSD       = cs.reduce((s,c)=>s+customerTotalUSD(c),0);
-  
-  const overdueCount   = cs.reduce((s,c)=>s+c.debts.filter(debtIsOverdue).length,0);
-  const activeCustomers= cs.filter(c=>customerRemainingUSD(c)>0 || customerRemainingLBP(c)>0).length;
+  const remUSD = cs.reduce((s,c)=>s+cRemUSD(c),0);
+  const remLBP = cs.reduce((s,c)=>s+cRemLBP(c),0);
+  const paidUSD = cs.reduce((s,c)=>s+cPaidUSD(c),0);
+  const totalUSD = cs.reduce((s,c)=>s+cTotalUSD(c),0);
+  const overdue = cs.reduce((s,c)=>s+c.debts.filter(isOverdue).length,0);
+  const active = cs.filter(c=>cRemUSD(c)>0.01 || cRemLBP(c)>1).length;
 
   el.innerHTML = `
     <div class="screen">
-      <div style="text-align:center; margin-bottom:12px; font-size:12px; color:var(--text-muted)">
-        سعر الصرف المعتمد: 1$ = ${fmt(rate())} ل.ل
+      <div style="text-align:center;margin-bottom:16px;font-size:13px;font-weight:700;color:var(--text-muted)">
+        💵 سعر الصرف: 1$ = ${fmt(rate())} ل.ل
       </div>
       <div class="stat-grid">
         <div class="stat-card danger">
           <div class="stat-label">المتبقي (دولار)</div>
-          <div class="stat-value danger">${fmtCurrency(totalRemainingUSD, USD)}</div>
-          <div class="stat-sub">ما يعادل ${fmtCurrency(totalRemainingLBP, LBP)}</div>
+          <div class="stat-value danger">${fmtCur(remUSD, USD)}</div>
+          <div class="stat-sub">= ${fmtCur(remLBP, LBP)}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">إجمالي المسدد (دولار)</div>
-          <div class="stat-value success">${fmtCurrency(totalPaidUSD, USD)}</div>
-          <div class="stat-sub">ما يعادل ${fmtCurrency(totalPaidLBP, LBP)}</div>
+          <div class="stat-label">إجمالي المسدد</div>
+          <div class="stat-value success">${fmtCur(paidUSD, USD)}</div>
+          <div class="stat-sub">من أصل ${fmtCur(totalUSD, USD)}</div>
         </div>
         <div class="stat-card warning">
           <div class="stat-label">ديون متأخرة</div>
-          <div class="stat-value">${overdueCount}</div>
+          <div class="stat-value">${overdue}</div>
           <div class="stat-sub">تحتاج متابعة</div>
         </div>
         <div class="stat-card info">
-          <div class="stat-label">الزبائن النشطين</div>
-          <div class="stat-value">${activeCustomers}</div>
+          <div class="stat-label">زبائن نشطين</div>
+          <div class="stat-value">${active}</div>
           <div class="stat-sub">من أصل ${cs.length} مسجلين</div>
         </div>
       </div>
 
       <div class="chart-box">
-        <h3>توزيع المسدد مقابل المتبقي (بالدولار)</h3>
-        <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
+        <h3>نسبة التحصيل (بالدولار)</h3>
+        <div class="chart-wrap"><canvas id="c1"></canvas></div>
       </div>
 
       <div class="chart-box">
-        <h3>أعلى 5 زبائن بالديون (بالدولار)</h3>
-        <div class="chart-wrap"><canvas id="topChart"></canvas></div>
+        <h3>أعلى 5 زبائن مديونية</h3>
+        <div class="chart-wrap"><canvas id="c2"></canvas></div>
       </div>
 
-      <button class="btn btn-primary btn-block" id="quickAdd">➕ إضافة زبون جديد</button>
+      <button class="btn btn-primary btn-block" id="addBtn" style="margin-top:8px">➕ إضافة زبون جديد</button>
     </div>`;
 
-  document.getElementById('quickAdd').onclick = ()=>openCustomerModal();
+  document.getElementById('addBtn').onclick = ()=>openCustomerModal();
 
-  if(dashChart) dashChart.destroy();
-  const dctx = document.getElementById('dashChart');
-  if(totalAllUSD>0){
-    dashChart = new Chart(dctx, {
+  if(chart1) chart1.destroy();
+  const dctx = document.getElementById('c1');
+  if(totalUSD>0){
+    chart1 = new Chart(dctx, {
       type:'doughnut',
-      data:{
-        labels:['مسدد','متبقي'],
-        datasets:[{data:[totalPaidUSD,totalRemainingUSD],
-          backgroundColor:['#10b981','#ef4444'],borderWidth:0}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{position:'bottom',labels:{font:{family:'Cairo'}}}}}
+      data:{ labels:['مسدد','متبقي'], datasets:[{data:[paidUSD,remUSD], backgroundColor:['#10b981','#ef4444'], borderWidth:0}] },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{font:{family:'Cairo',weight:'bold'}}}}}
     });
-  } else {
-    dctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:60px 0;font-size:13px">لا توجد بيانات بعد</p>';
-  }
+  } else dctx.parentElement.innerHTML = '<div class="empty"><h3>لا توجد بيانات</h3></div>';
 
-  if(topChart) topChart.destroy();
-  const top = [...cs].map(c=>({name:c.name,val:customerRemainingUSD(c)}))
-                     .filter(x=>x.val>0.01).sort((a,b)=>b.val-a.val).slice(0,5);
-  const tctx = document.getElementById('topChart');
-  if(top.length && tctx){
-    topChart = new Chart(tctx,{
+  if(chart2) chart2.destroy();
+  const top = [...cs].map(c=>({name:c.name,val:cRemUSD(c)})).filter(x=>x.val>0.01).sort((a,b)=>b.val-a.val).slice(0,5);
+  const tctx = document.getElementById('c2');
+  if(top.length){
+    chart2 = new Chart(tctx, {
       type:'bar',
-      data:{labels:top.map(t=>t.name),
-        datasets:[{label:'المتبقي ($)',data:top.map(t=>t.val),
-          backgroundColor:'#10b981',borderRadius:8}]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
-        scales:{y:{beginAtZero:true,ticks:{font:{family:'Cairo'}}},
-                x:{ticks:{font:{family:'Cairo'}}}}}
+      data:{ labels:top.map(t=>t.name), datasets:[{label:'المتبقي ($)', data:top.map(t=>t.val), backgroundColor:'#10b981', borderRadius:6}] },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{display:false}},x:{grid:{display:false},ticks:{font:{family:'Cairo'}}}}}
     });
-  } else if(tctx){
-    tctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:60px 0;font-size:13px">لا توجد ديون مسجلة</p>';
-  }
+  } else tctx.parentElement.innerHTML = '<div class="empty"><h3>لا توجد ديون</h3></div>';
 }
 
+/* ==================== CUSTOMERS ==================== */
 function renderCustomers(el){
   let list = allCustomers();
-  if(searchQuery) list = list.filter(c =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (c.phone||'').includes(searchQuery));
-  if(filterCategory!=='all') list = list.filter(c=>c.category===filterCategory);
-  list.sort((a,b)=>{
-    if(sortBy==='recent') return (b.createdAt||0)-(a.createdAt||0);
-    if(sortBy==='amount') return customerRemainingUSD(b)-customerRemainingUSD(a);
-    if(sortBy==='name') return a.name.localeCompare(b.name,'ar');
-    return 0;
-  });
+  if(searchQuery) list = list.filter(c => c.name.includes(searchQuery) || (c.phone||'').includes(searchQuery));
+  list.sort((a,b)=>cRemUSD(b)-cRemUSD(a));
 
   el.innerHTML = `
     <div class="screen">
       <div class="section-header">
         <div class="section-title">الزبائن (${list.length})</div>
-        <button class="btn btn-primary btn-sm" id="addCustomer">➕ زبون</button>
+        <button class="btn btn-primary btn-sm" id="addBtn">➕ زبون</button>
       </div>
-      <div class="search-box">
-        <input class="search-input" id="searchInput" placeholder="🔍 ابحث بالاسم أو الهاتف..." value="${escapeHtml(searchQuery)}">
-      </div>
-      <div class="search-box" style="overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
-        <button class="chip ${filterCategory==='all'?'active':''}" data-filter="all">الكل</button>
-        <button class="chip ${filterCategory==='regular'?'active':''}" data-filter="regular">منتظم</button>
-        <button class="chip ${filterCategory==='late'?'active':''}" data-filter="late">متأخر</button>
-        <button class="chip ${filterCategory==='blacklist'?'active':''}" data-filter="blacklist">قائمة سوداء</button>
-      </div>
-      <div class="search-box" style="overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
-        <button class="chip ${sortBy==='recent'?'active':''}" data-sort="recent">الأحدث</button>
-        <button class="chip ${sortBy==='amount'?'active':''}" data-sort="amount">الأعلى ديناً</button>
-        <button class="chip ${sortBy==='name'?'active':''}" data-sort="name">الاسم</button>
-      </div>
-      <div id="customersList">
-        ${list.length ? list.map(customerCardHTML).join('') :
-          `<div class="empty"><div class="empty-icon">👥</div><h3>لا يوجد زبائن</h3><p>اضغط "زبون" لإضافة أول زبون</p></div>`}
+      <input class="search-input" id="search" placeholder="🔍 ابحث بالاسم أو الهاتف..." value="${searchQuery}" style="margin-bottom:16px">
+      
+      <div id="list">
+        ${list.length ? list.map(customerCardHTML).join('') : '<div class="empty"><div class="empty-icon">👥</div><h3>لا يوجد زبائن</h3></div>'}
       </div>
     </div>`;
 
-  document.getElementById('addCustomer').onclick = ()=>openCustomerModal();
-  const si = document.getElementById('searchInput');
-  si.oninput = e => { searchQuery = e.target.value; renderCustomers(el); setTimeout(()=>{const s=document.getElementById('searchInput'); if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0); };
-  el.querySelectorAll('[data-filter]').forEach(b=> b.onclick = ()=>{ filterCategory = b.dataset.filter; render(); });
-  el.querySelectorAll('[data-sort]').forEach(b=> b.onclick = ()=>{ sortBy = b.dataset.sort; render(); });
-  el.querySelectorAll('[data-customer]').forEach(c=> c.onclick = ()=>{ currentCustomerId = c.dataset.customer; render(); });
+  document.getElementById('addBtn').onclick = ()=>openCustomerModal();
+  const si = document.getElementById('search');
+  si.oninput = e => { searchQuery = e.target.value; renderCustomers(el); setTimeout(()=>{const s=document.getElementById('search'); if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);}},0); };
+  el.querySelectorAll('[data-c]').forEach(x => x.onclick = ()=>{ currentCustomerId = x.dataset.c; render(); });
 }
 
 function customerCardHTML(c){
-  const remUSD = customerRemainingUSD(c);
-  const remLBP = customerRemainingLBP(c);
-  const paidUSD = customerPaidUSD(c);
-  const totalUSD = customerTotalUSD(c);
+  const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
+  const paidUSD = cPaidUSD(c), totalUSD = cTotalUSD(c);
   const pct = totalUSD>0 ? Math.round(paidUSD/totalUSD*100) : 0;
-  const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
-  const catClass = c.category||'regular';
-  const hasOverdue = c.debts.some(debtIsOverdue);
-  
+  const hasOver = c.debts.some(isOverdue);
+  const isSettled = remUSD <= 0.01 && remLBP <= 1;
+
   return `
-    <div class="customer-card" data-customer="${c.id}">
+    <div class="customer-card" data-c="${c.id}">
       <div class="customer-head">
         <div>
           <div class="customer-name">
             ${escapeHtml(c.name)}
-            <span class="badge badge-${catClass}">${catLabel}</span>
-            ${hasOverdue?'<span class="badge badge-overdue">متأخر</span>':''}
+            ${hasOver ? '<span class="badge badge-blacklist">متأخر</span>' : ''}
           </div>
-          ${c.phone?`<div class="customer-meta"><span>📞 ${escapeHtml(c.phone)}</span></div>`:''}
+          ${c.phone ? `<div class="customer-meta"><span>📞 ${escapeHtml(c.phone)}</span></div>` : ''}
         </div>
-        <div class="customer-amount ${(remUSD<=0.01 && remLBP<=1)?'paid':''}">
-          ${(remUSD<=0.01 && remLBP<=1) ? '✓ مسدد' : `${fmtCurrency(remUSD, USD)}<br><span style="font-size:11px">${fmtCurrency(remLBP, LBP)}</span>`}
+        <div class="customer-amount ${isSettled?'paid':''}">
+          ${isSettled ? '✓ مسدد' : `${fmtCur(remUSD, USD)}<br><span style="font-size:11px;color:var(--text-muted)">${fmtCur(remLBP, LBP)}</span>`}
         </div>
       </div>
-      ${totalUSD>0?`
+      ${totalUSD>0 ? `
         <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
-        <div class="customer-meta" style="margin-top:6px">
-          <span>مسدد: ${fmtCurrency(paidUSD, USD)}</span>
-          <span>${c.debts.length} دين</span>
-        </div>`:''}
+        <div class="customer-meta"><span>مسدد: ${fmtCur(paidUSD, USD)}</span><span>الديون: ${c.debts.length}</span></div>
+      ` : ''}
     </div>`;
 }
 
+/* ==================== CUSTOMER DETAIL ==================== */
 function renderCustomerDetail(el){
-  const c = findCustomer(currentCustomerId);
+  const c = findC(currentCustomerId);
   if(!c){ currentCustomerId=null; return render(); }
-  const remUSD = customerRemainingUSD(c);
-  const remLBP = customerRemainingLBP(c);
-  const paidUSD = customerPaidUSD(c);
-  const totalUSD = customerTotalUSD(c);
+  const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
+  const paidUSD = cPaidUSD(c), totalUSD = cTotalUSD(c);
   const pct = totalUSD>0 ? Math.round(paidUSD/totalUSD*100) : 0;
-  const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
 
   el.innerHTML = `
     <div class="screen">
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-ghost" id="backBtn">→ رجوع</button>
-      </div>
+      <button class="btn btn-ghost btn-sm" id="back" style="margin-bottom:16px">→ رجوع</button>
+      
       <div class="card">
-        <div class="customer-head">
-          <div>
-            <div class="customer-name" style="font-size:20px">${escapeHtml(c.name)}
-              <span class="badge badge-${c.category||'regular'}">${catLabel}</span>
-            </div>
-            ${c.phone?`<div class="customer-meta" style="margin-top:6px"><span>📞 ${escapeHtml(c.phone)}</span></div>`:''}
-            ${c.note?`<div class="customer-meta" style="margin-top:4px"><span>📝 ${escapeHtml(c.note)}</span></div>`:''}
-          </div>
-        </div>
+        <div style="font-size:22px;font-weight:900;margin-bottom:8px">${escapeHtml(c.name)}</div>
+        ${c.phone ? `<div style="font-size:14px;color:var(--text-muted);margin-bottom:16px">📞 ${escapeHtml(c.phone)}</div>` : ''}
         
-        <div class="stat-grid" style="margin-top:16px;margin-bottom:0">
+        <div class="stat-grid" style="margin-bottom:0">
           <div class="stat-card danger">
             <div class="stat-label">المتبقي بالدولار</div>
-            <div class="stat-value danger">${fmtCurrency(remUSD, USD)}</div>
-            <div class="stat-sub">= ${fmtCurrency(remLBP, LBP)}</div>
+            <div class="stat-value danger">${fmtCur(remUSD, USD)}</div>
+            <div class="stat-sub">= ${fmtCur(remLBP, LBP)}</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">المسدد بالدولار</div>
-            <div class="stat-value success">${fmtCurrency(paidUSD, USD)}</div>
+            <div class="stat-label">المسدد</div>
+            <div class="stat-value success">${fmtCur(paidUSD, USD)}</div>
           </div>
         </div>
-        ${totalUSD>0?`<div class="progress" style="margin-top:16px"><div class="progress-bar" style="width:${pct}%"></div></div>`:''}
+        ${totalUSD>0 ? `<div class="progress" style="margin-top:16px"><div class="progress-bar" style="width:${pct}%"></div></div>` : ''}
       </div>
 
-      <div class="section-header" style="margin-top:16px">
-        <div class="section-title">الديون (${c.debts.length})</div>
-        <button class="btn btn-primary btn-sm" id="addDebt">➕ دين</button>
-      </div>
-      <div id="debtsList">
-        ${c.debts.length ? [...c.debts].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(d=>debtRowHTML(d,c.id)).join('') :
-          `<div class="empty"><div class="empty-icon">📝</div><h3>لا توجد ديون</h3><p>أضف أول دين لهذا الزبون</p></div>`}
+      <div class="section-header" style="margin-top:24px">
+        <div class="section-title">سجل الديون</div>
+        <button class="btn btn-primary btn-sm" id="addDebt">➕ دين جديد</button>
       </div>
 
-      <div class="section-header" style="margin-top:16px">
-        <div class="section-title">إجراءات</div>
+      <div>
+        ${c.debts.length ? [...c.debts].sort((a,b)=>b.createdAt-a.createdAt).map(d=>debtHTML(d)).join('') : '<div class="empty"><h3>لا توجد ديون مسجلة</h3></div>'}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-wa" id="waBtn">📱 إرسال واتساب</button>
-        <button class="btn btn-ghost" id="printBtn">🖨️ كشف حساب</button>
+
+      <div class="section-header" style="margin-top:24px"><div class="section-title">إجراءات سريعة</div></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-wa" id="waBtn" style="flex:1">📱 إرسال كشف واتساب</button>
+        <button class="btn btn-ghost" id="printBtn">🖨️ طباعة</button>
         <button class="btn btn-ghost" id="editBtn">✏️ تعديل</button>
-        <button class="btn btn-danger" id="deleteBtn">🗑️ حذف</button>
+        <button class="btn btn-danger" id="delBtn">🗑️ حذف</button>
       </div>
     </div>`;
 
-  document.getElementById('backBtn').onclick = ()=>{ currentCustomerId=null; render(); };
+  document.getElementById('back').onclick = ()=>{ currentCustomerId=null; render(); };
   document.getElementById('addDebt').onclick = ()=>openDebtModal(c.id);
   document.getElementById('editBtn').onclick = ()=>openCustomerModal(c);
-  document.getElementById('deleteBtn').onclick = ()=>deleteCustomer(c.id);
+  document.getElementById('delBtn').onclick = ()=>{
+    if(confirm('حذف الزبون وكل ديونه؟')){
+      DB.customers = DB.customers.filter(x=>x.id!==c.id);
+      saveDB(); currentCustomerId=null; render(); toast('تم الحذف');
+    }
+  };
   document.getElementById('printBtn').onclick = ()=>printStatement(c.id);
   document.getElementById('waBtn').onclick = ()=>sendWhatsApp(c.id);
 
-  el.querySelectorAll('[data-debt-pay]').forEach(b => b.onclick = e => {
-    e.stopPropagation(); openPaymentModal(c.id, b.dataset.debtPay);
-  });
-  el.querySelectorAll('[data-debt-edit]').forEach(b => b.onclick = e => {
-    e.stopPropagation(); openDebtModal(c.id, b.dataset.debtEdit);
-  });
-  el.querySelectorAll('[data-debt-del]').forEach(b => b.onclick = e => {
+  el.querySelectorAll('[data-pay]').forEach(b => b.onclick = e => { e.stopPropagation(); openPaymentModal(c.id, b.dataset.pay); });
+  el.querySelectorAll('[data-edit]').forEach(b => b.onclick = e => { e.stopPropagation(); openDebtModal(c.id, b.dataset.edit); });
+  el.querySelectorAll('[data-del]').forEach(b => b.onclick = e => {
     e.stopPropagation();
     if(confirm('حذف هذا الدين؟')){
-      const cc = findCustomer(c.id);
-      cc.debts = cc.debts.filter(d=>d.id!==b.dataset.debtDel);
+      const cc = findC(c.id);
+      cc.debts = cc.debts.filter(x=>x.id!==b.dataset.del);
       saveDB(); render();
     }
   });
 }
 
-function debtRowHTML(d, cid){
-  const rem = debtRemaining(d);
-  const total = debtTotal(d);
-  const paid = debtPaid(d);
+function debtHTML(d){
   const curr = d.currency || USD;
-  const pct = total>0 ? Math.round(paid/total*100) : 0;
-  const overdue = debtIsOverdue(d);
-  const isPaid = debtIsPaid(d);
-  const dueTxt = d.dueDate ? new Date(d.dueDate).toLocaleDateString('ar-EG') : '—';
-  const badgeCurr = curr === USD ? '<span class="badge badge-usd">دولار</span>' : '<span class="badge badge-lbp">ليرة</span>';
+  const rem = dRem(d), tot = dTotal(d), paid = dPaid(d);
+  const pct = tot>0 ? Math.round(paid/tot*100) : 0;
+  const paidOff = isPaid(d);
+  const over = isOverdue(d);
+  const due = d.dueDate ? new Date(d.dueDate).toLocaleDateString('ar-EG') : '—';
+  const badgeCur = curr === USD ? '<span class="badge badge-usd">دولار $</span>' : '<span class="badge badge-lbp">ليرة ل.ل</span>';
 
   return `
-    <div class="debt-item ${overdue?'overdue':''} ${isPaid?'paid':''}">
+    <div class="debt-item ${over?'overdue':''} ${paidOff?'paid':''}">
       <div class="debt-head">
-        <div class="debt-desc">${escapeHtml(d.description||'دين')} ${badgeCurr}</div>
-        <div class="debt-amount">${isPaid?'✓ مسدد':fmtCurrency(rem, curr)}</div>
+        <div class="debt-desc">${escapeHtml(d.description||'دين')} ${badgeCur}</div>
+        <div class="debt-amount">${paidOff?'✓ مسدد':fmtCur(rem, curr)}</div>
       </div>
       <div class="debt-info">
-        <span>💰 ${fmtCurrency(total, curr)}</span>
-        <span>✅ ${fmtCurrency(paid, curr)}</span>
-        <span>📅 ${dueTxt}</span>
-        ${overdue?'<span class="badge badge-overdue">متأخر</span>':''}
+        <span>💰 ${fmtCur(tot, curr)}</span>
+        <span>✅ ${fmtCur(paid, curr)}</span>
+        <span>📅 ${due}</span>
+        ${over ? '<span class="badge badge-blacklist">متأخر</span>' : ''}
       </div>
       <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
-      <div class="debt-actions" style="margin-top:10px">
-        ${!isPaid?`<button class="btn btn-primary btn-sm" data-debt-pay="${d.id}">💵 دفعة</button>`:''}
-        <button class="btn btn-ghost btn-sm" data-debt-edit="${d.id}">✏️ تعديل</button>
-        <button class="btn btn-ghost btn-sm" data-debt-del="${d.id}">🗑️</button>
+      <div class="debt-actions" style="margin-top:12px">
+        ${!paidOff ? `<button class="btn btn-primary btn-sm" data-pay="${d.id}">💵 دفعة</button>` : ''}
+        <button class="btn btn-ghost btn-sm" data-edit="${d.id}">✏️ تعديل</button>
+        <button class="btn btn-ghost btn-sm" data-del="${d.id}">🗑️</button>
       </div>
     </div>`;
 }
 
+/* ==================== REMINDERS ==================== */
 function renderReminders(el){
   const days = DB.settings.reminderDays||3;
-  const overdue = [], upcoming = [];
+  const over = [], soon = [];
   allCustomers().forEach(c=>{
     c.debts.forEach(d=>{
-      if(debtIsOverdue(d)) overdue.push({c,d});
-      else if(debtIsUpcoming(d, days)) upcoming.push({c,d});
+      if(isOverdue(d)) over.push({c,d});
+      else if(isUpcoming(d, days)) soon.push({c,d});
     });
   });
 
   el.innerHTML = `
     <div class="screen">
-      <div class="section-title" style="margin-bottom:12px">🔔 التنبيهات</div>
+      <div class="section-title" style="margin-bottom:16px">🔔 التنبيهات</div>
+      
       <div class="stat-grid">
-        <div class="stat-card danger">
-          <div class="stat-label">ديون متأخرة</div>
-          <div class="stat-value">${overdue.length}</div>
-        </div>
-        <div class="stat-card warning">
-          <div class="stat-label">تستحق خلال ${days} أيام</div>
-          <div class="stat-value">${upcoming.length}</div>
-        </div>
+        <div class="stat-card danger"><div class="stat-label">ديون متأخرة</div><div class="stat-value">${over.length}</div></div>
+        <div class="stat-card warning"><div class="stat-label">تستحق قريباً</div><div class="stat-value">${soon.length}</div></div>
       </div>
 
       <div class="section-header"><div class="section-title">⏰ متأخرة</div></div>
-      ${overdue.length ? overdue.map(({c,d})=>reminderCardHTML(c,d,true)).join('') :
-        '<div class="empty"><div class="empty-icon">✓</div><h3>لا توجد ديون متأخرة</h3></div>'}
+      ${over.length ? over.map(({c,d})=>remCardHTML(c,d,true)).join('') : '<div class="empty"><h3>لا توجد ديون متأخرة</h3></div>'}
 
-      <div class="section-header" style="margin-top:16px"><div class="section-title">📅 قريبة الاستحقاق</div></div>
-      ${upcoming.length ? upcoming.map(({c,d})=>reminderCardHTML(c,d,false)).join('') :
-        '<div class="empty"><div class="empty-icon">✓</div><h3>لا توجد ديون قريبة</h3></div>'}
+      <div class="section-header" style="margin-top:24px"><div class="section-title">📅 قريبة الاستحقاق</div></div>
+      ${soon.length ? soon.map(({c,d})=>remCardHTML(c,d,false)).join('') : '<div class="empty"><h3>لا توجد ديون قريبة</h3></div>'}
     </div>`;
 
-  el.querySelectorAll('[data-go-customer]').forEach(x=> x.onclick = ()=>{
-    currentCustomerId = x.dataset.goCustomer; render();
-  });
+  el.querySelectorAll('[data-c]').forEach(x => x.onclick = ()=>{ currentCustomerId = x.dataset.c; render(); });
 }
 
-function reminderCardHTML(c, d, overdue){
+function remCardHTML(c, d, over){
   const curr = d.currency || USD;
   return `
-    <div class="customer-card" data-go-customer="${c.id}">
+    <div class="customer-card" data-c="${c.id}">
       <div class="customer-head">
         <div>
-          <div class="customer-name">${escapeHtml(c.name)}
-            ${overdue?'<span class="badge badge-overdue">متأخر</span>':'<span class="badge badge-late">قريب</span>'}
-          </div>
-          <div class="customer-meta"><span>📝 ${escapeHtml(d.description||'دين')}</span></div>
-          <div class="customer-meta"><span>📅 ${new Date(d.dueDate).toLocaleDateString('ar-EG')}</span></div>
+          <div class="customer-name">${escapeHtml(c.name)} ${over?'<span class="badge badge-blacklist">متأخر</span>':'<span class="badge badge-late">قريب</span>'}</div>
+          <div class="customer-meta"><span>📝 ${escapeHtml(d.description||'دين')}</span><span>📅 ${new Date(d.dueDate).toLocaleDateString('ar-EG')}</span></div>
         </div>
-        <div class="customer-amount">${fmtCurrency(debtRemaining(d), curr)}</div>
+        <div class="customer-amount">${fmtCur(dRem(d), curr)}</div>
       </div>
     </div>`;
 }
 
-function renderBackup(el){
-  el.innerHTML = `
-    <div class="screen">
-      <div class="section-title" style="margin-bottom:12px">☁️ النسخ الاحتياطي</div>
-      <div class="card">
-        <h3 style="font-size:15px;margin-bottom:8px">📤 تصدير البيانات</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-          حفظ نسخة من كل بياناتك في ملف JSON آمن على جهازك.
-        </p>
-        <button class="btn btn-primary btn-block" id="exportBtn">📥 تنزيل ملف النسخة</button>
-      </div>
-      <div class="card">
-        <h3 style="font-size:15px;margin-bottom:8px">📥 استيراد البيانات</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-          ⚠️ سيتم استبدال البيانات الحالية بالكامل.
-        </p>
-        <input type="file" id="importFile" accept=".json" style="display:none">
-        <button class="btn btn-ghost btn-block" id="importBtn">📂 اختيار ملف</button>
-      </div>
-      <div class="card">
-        <h3 style="font-size:15px;margin-bottom:8px">🗑️ حذف كل البيانات</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
-          عملية لا يمكن التراجع عنها. تأكد من النسخ الاحتياطي أولاً.
-        </p>
-        <button class="btn btn-danger btn-block" id="clearBtn">حذف كل شيء</button>
-      </div>
-      <div class="card">
-        <h3 style="font-size:15px;margin-bottom:8px">📊 إحصائيات</h3>
-        <div class="customer-meta" style="font-size:14px">
-          <div>الزبائن: <b>${DB.customers.length}</b></div>
-          <div>حجم البيانات: <b>${(JSON.stringify(DB).length/1024).toFixed(1)} KB</b></div>
-        </div>
-      </div>
-    </div>`;
-
-  document.getElementById('exportBtn').onclick = exportData;
-  document.getElementById('importBtn').onclick = ()=>document.getElementById('importFile').click();
-  document.getElementById('importFile').onchange = importData;
-  document.getElementById('clearBtn').onclick = ()=>{
-    if(confirm('هل أنت متأكد من حذف كل البيانات؟ لا يمكن التراجع!')){
-      if(confirm('تأكيد نهائي: سيتم حذف كل الزبائن والديون!')){
-        DB = defaultData(); saveDB(); toast('تم حذف كل البيانات'); render();
-      }
-    }
-  };
-}
-
-function exportData(){
-  const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `daftar-diyoun-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(a.href);
-  toast('✓ تم تصدير النسخة الاحتياطية');
-}
-
-function importData(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if(!data.customers || !Array.isArray(data.customers)) throw new Error('ملف غير صالح');
-      if(confirm('استيراد البيانات؟ سيتم استبدال البيانات الحالية.')){
-        DB = { customers:data.customers, settings:{...defaultData().settings,...(data.settings||{})} };
-        saveDB(); toast('✓ تم استيراد البيانات'); render();
-      }
-    } catch(err){ alert('ملف غير صالح: '+err.message); }
-  };
-  reader.readAsText(file);
-  e.target.value='';
-}
-
+/* ==================== SETTINGS ==================== */
 function renderSettings(el){
   el.innerHTML = `
     <div class="screen">
-      <div class="section-title" style="margin-bottom:12px">⚙️ الإعدادات</div>
-      
+      <div class="section-title" style="margin-bottom:16px">⚙️ الإعدادات</div>
+
       <div class="card">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">💵 سعر صرف الدولار مقابل الليرة اللبنانية</label>
-          <input class="form-input" id="rateInput" type="number" value="${DB.settings.exchangeRate}" placeholder="مثال: 89500">
-          <div class="stat-sub" style="margin-top:6px">سيتم استخدام هذا السعر للتحويل التلقائي بين العملتين.</div>
+        <div class="form-group">
+          <label class="form-label">💵 سعر صرف الدولار (مقابل الليرة)</label>
+          <input class="form-input" id="rateIn" type="number" value="${DB.settings.exchangeRate}">
+          <div class="stat-sub" style="margin-top:8px">يُستخدم للتحويل التلقائي في التقارير والكشوفات.</div>
         </div>
       </div>
 
       <div class="card">
         <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">🔔 عدد أيام التنبيه المسبق</label>
-          <input class="form-input" id="remInput" type="number" min="1" max="30" value="${DB.settings.reminderDays}">
+          <label class="form-label">🔔 التنبيه قبل (أيام)</label>
+          <input class="form-input" id="remIn" type="number" min="1" max="30" value="${DB.settings.reminderDays}">
         </div>
       </div>
 
       <div class="card">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">🌙 الوضع الليلي</label>
-          <button class="btn btn-ghost btn-block" id="toggleTheme">
-            ${DB.settings.darkMode?'☀️ تبديل إلى الوضع النهاري':'🌙 تبديل إلى الوضع الليلي'}
-          </button>
-        </div>
+        <button class="btn btn-ghost btn-block" id="themeBtn2">${DB.settings.darkMode?'☀️ الوضع النهاري':'🌙 الوضع الليلي'}</button>
       </div>
 
-      <button class="btn btn-primary btn-block" id="saveSettings">💾 حفظ الإعدادات</button>
+      <button class="btn btn-primary btn-block" id="save" style="margin-bottom:24px">💾 حفظ الإعدادات</button>
 
-      <div style="text-align:center;margin-top:24px;color:var(--text-muted);font-size:12px">
-        دفتر الديون Pro — الإصدار 3.0<br>يعمل بدون إنترنت • بياناتك على جهازك فقط
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;font-weight:600">
+        دفتر الديون Pro — الإصدار 3.0
       </div>
     </div>`;
 
-  document.getElementById('toggleTheme').onclick = ()=>{
-    DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme(); render();
-  };
-  document.getElementById('saveSettings').onclick = ()=>{
-    const r = parseFloat(document.getElementById('rateInput').value) || 89500;
-    const d = Math.max(1, Math.min(30, parseInt(document.getElementById('remInput').value)||3));
-    DB.settings.exchangeRate = r; 
-    DB.settings.reminderDays = d;
+  document.getElementById('themeBtn2').onclick = ()=>{ DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme(); render(); };
+  document.getElementById('save').onclick = ()=>{
+    DB.settings.exchangeRate = parseFloat(document.getElementById('rateIn').value) || 89500;
+    DB.settings.reminderDays = Math.max(1, parseInt(document.getElementById('remIn').value) || 3);
     saveDB(); toast('✓ تم حفظ الإعدادات'); render();
   };
 }
 
+/* ==================== MODALS & ACTIONS ==================== */
 function openCustomerModal(c){
-  const editing = !!c;
-  const data = c || { name:'', phone:'', note:'', category:'regular' };
-  showModal(editing?'✏️ تعديل زبون':'➕ زبون جديد', `
+  const ed = !!c;
+  const dt = c || { name:'', phone:'' };
+  showModal(ed?'✏️ تعديل زبون':'➕ زبون جديد', `
     <div class="form-group">
       <label class="form-label">الاسم *</label>
-      <input class="form-input" id="cName" value="${escapeHtml(data.name)}" placeholder="اسم الزبون" autofocus>
+      <input class="form-input" id="cN" value="${escapeHtml(dt.name)}" placeholder="اسم الزبون">
     </div>
     <div class="form-group">
-      <label class="form-label">رقم الهاتف (مع رمز الدولة للواتساب)</label>
-      <input class="form-input" id="cPhone" value="${escapeHtml(data.phone||'')}" placeholder="مثال: 0912345678" type="tel">
-    </div>
-    <div class="form-group">
-      <label class="form-label">التصنيف</label>
-      <select class="form-select" id="cCat">
-        <option value="regular" ${data.category==='regular'?'selected':''}>🟢 منتظم</option>
-        <option value="late" ${data.category==='late'?'selected':''}>🟡 متأخر</option>
-        <option value="blacklist" ${data.category==='blacklist'?'selected':''}>🔴 قائمة سوداء</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">ملاحظات</label>
-      <textarea class="form-textarea" id="cNote" placeholder="اختياري">${escapeHtml(data.note||'')}</textarea>
+      <label class="form-label">رقم الهاتف (للواتساب)</label>
+      <input class="form-input" id="cP" value="${escapeHtml(dt.phone||'')}" placeholder="مثال: 031234567" type="tel">
     </div>
     <div class="form-actions">
       <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-      <button class="btn btn-primary" id="saveCustomer">${editing?'حفظ':'إضافة'}</button>
+      <button class="btn btn-primary" id="saveC">${ed?'حفظ':'إضافة'}</button>
     </div>
   `);
-  document.getElementById('saveCustomer').onclick = ()=>{
-    const name = document.getElementById('cName').value.trim();
-    if(!name) return alert('أدخل الاسم');
-    const obj = {
-      name,
-      phone: document.getElementById('cPhone').value.trim(),
-      category: document.getElementById('cCat').value,
-      note: document.getElementById('cNote').value.trim()
-    };
-    if(editing){
-      Object.assign(c, obj);
-    } else {
-      DB.customers.push({ id: uid(), createdAt: Date.now(), archived:false, debts:[], ...obj });
-    }
-    saveDB(); closeModal(); render(); toast(editing?'✓ تم التعديل':'✓ تمت الإضافة');
+  document.getElementById('saveC').onclick = ()=>{
+    const name = document.getElementById('cN').value.trim();
+    if(!name) return alert('أدخل اسم الزبون');
+    const obj = { name, phone: document.getElementById('cP').value.trim() };
+    if(ed) Object.assign(c, obj);
+    else DB.customers.push({ id: uid(), createdAt: Date.now(), debts:[], ...obj });
+    saveDB(); closeModal(); render(); toast(ed?'✓ تم التعديل':'✓ تمت الإضافة');
   };
 }
 
-function deleteCustomer(id){
-  if(!confirm('حذف الزبون وكل ديونه؟ لا يمكن التراجع.')) return;
-  DB.customers = DB.customers.filter(c=>c.id!==id);
-  saveDB(); currentCustomerId=null; render(); toast('✓ تم الحذف');
-}
+function openDebtModal(cId, dId){
+  const c = findC(cId); if(!c) return;
+  const ed = !!dId;
+  const dt = ed ? c.debts.find(x=>x.id===dId) : { description:'', amount:'', currency:USD, dueDate:'' };
 
-function openDebtModal(customerId, debtId){
-  const c = findCustomer(customerId);
-  if(!c) return;
-  const editing = !!debtId;
-  const d = editing ? c.debts.find(x=>x.id===debtId) : null;
-  const data = d || { description:'', amount:'', paid:0, dueDate:'', note:'', currency: USD };
-
-  showModal(editing?'✏️ تعديل دين':'➕ دين جديد', `
+  showModal(ed?'✏️ تعديل دين':'➕ دين جديد', `
     <div class="form-group">
       <label class="form-label">الوصف</label>
-      <input class="form-input" id="dDesc" value="${escapeHtml(data.description||'')}" placeholder="مثال: بضاعة، سلفة...">
+      <input class="form-input" id="dD" value="${escapeHtml(dt.description||'')}" placeholder="مثال: بضاعة، سلفة...">
     </div>
     
     <div class="form-row-3">
       <div class="form-group">
         <label class="form-label">المبلغ *</label>
-        <input class="form-input" id="dAmount" type="number" step="0.01" min="0" value="${data.amount}" placeholder="0">
+        <input class="form-input" id="dA" type="number" step="0.01" value="${dt.amount||''}" placeholder="0">
       </div>
       <div class="form-group">
         <label class="form-label">العملة</label>
-        <select class="form-select" id="dCurr">
-          <option value="USD" ${data.currency==='USD'?'selected':''}>دولار $</option>
-          <option value="LBP" ${data.currency==='LBP'?'selected':''}>ليرة ل.ل</option>
+        <select class="form-select" id="dC">
+          <option value="USD" ${dt.currency==='USD'?'selected':''}>دولار $</option>
+          <option value="LBP" ${dt.currency==='LBP'?'selected':''}>ليرة ل.ل</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">المدفوع</label>
-        <input class="form-input" id="dPaid" type="number" step="0.01" min="0" value="${data.paid||0}" ${editing?'':'readonly'} placeholder="0">
+        <label class="form-label">مدفوع</label>
+        <input class="form-input" id="dP" type="number" step="0.01" value="${dt.paid||0}" ${ed?'':'readonly'}>
       </div>
     </div>
-    
+
     <div class="form-group">
       <label class="form-label">موعد الاستحقاق</label>
-      <input class="form-input" id="dDue" type="date" value="${data.dueDate||''}">
+      <input class="form-input" id="dDue" type="date" value="${dt.dueDate||''}">
     </div>
-    <div class="form-group">
-      <label class="form-label">ملاحظات</label>
-      <textarea class="form-textarea" id="dNote" placeholder="اختياري">${escapeHtml(data.note||'')}</textarea>
-    </div>
+
     <div class="form-actions">
       <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-      <button class="btn btn-primary" id="saveDebt">${editing?'حفظ':'إضافة'}</button>
+      <button class="btn btn-primary" id="saveD">${ed?'حفظ':'إضافة'}</button>
     </div>
   `);
 
-  document.getElementById('saveDebt').onclick = ()=>{
-    const amount = parseFloat(document.getElementById('dAmount').value)||0;
+  document.getElementById('saveD').onclick = ()=>{
+    const amount = parseFloat(document.getElementById('dA').value)||0;
     if(amount<=0) return alert('أدخل مبلغاً صحيحاً');
-    const paid = editing ? (parseFloat(document.getElementById('dPaid').value)||0) : 0;
     const obj = {
-      description: document.getElementById('dDesc').value.trim(),
-      amount, 
-      paid,
-      currency: document.getElementById('dCurr').value,
-      dueDate: document.getElementById('dDue').value || '',
-      note: document.getElementById('dNote').value.trim()
+      description: document.getElementById('dD').value.trim(),
+      amount,
+      paid: ed ? (parseFloat(document.getElementById('dP').value)||0) : 0,
+      currency: document.getElementById('dC').value,
+      dueDate: document.getElementById('dDue').value
     };
-    if(editing){
-      Object.assign(d, obj);
-    } else {
-      c.debts.push({ id:uid(), createdAt:Date.now(), payments:[], ...obj });
-    }
-    saveDB(); closeModal(); render(); toast(editing?'✓ تم التعديل':'✓ تمت إضافة الدين');
+    if(ed) Object.assign(dt, obj);
+    else c.debts.push({ id:uid(), createdAt:Date.now(), ...obj });
+    saveDB(); closeModal(); render(); toast(ed?'✓ تم التعديل':'✓ تمت الإضافة');
   };
 }
 
-function openPaymentModal(customerId, debtId){
-  const c = findCustomer(customerId);
-  const d = c.debts.find(x=>x.id===debtId);
-  if(!d) return;
-  const rem = debtRemaining(d);
-  const curr = d.currency || USD;
+function openPaymentModal(cId, dId){
+  const c = findC(cId); const d = c.debts.find(x=>x.id===dId); if(!d) return;
+  const rem = dRem(d); const curr = d.currency || USD;
 
   showModal('💵 تسجيل دفعة', `
-    <div class="card" style="margin-bottom:16px;background:var(--bg);box-shadow:none">
-      <div class="customer-meta" style="font-size:13px">
-        <div>الدين: <b>${escapeHtml(d.description||'دين')}</b></div>
-        <div>المتبقي: <b style="color:var(--danger)">${fmtCurrency(rem, curr)}</b></div>
-      </div>
+    <div class="card" style="margin-bottom:16px;background:var(--bg)">
+      <div style="font-size:13px;font-weight:700">المتبقي: <span style="color:var(--danger)">${fmtCur(rem, curr)}</span></div>
     </div>
     <div class="form-group">
-      <label class="form-label">المبلغ (${getCurrencySymbol(curr)}) *</label>
-      <input class="form-input" id="pAmount" type="number" step="0.01" min="0" max="${rem}" value="${rem}" autofocus>
-    </div>
-    <div class="form-group">
-      <label class="form-label">ملاحظة</label>
-      <input class="form-input" id="pNote" placeholder="اختياري">
+      <label class="form-label">المبلغ (${getCurSymbol(curr)}) *</label>
+      <input class="form-input" id="pA" type="number" step="0.01" value="${rem}" max="${rem}">
     </div>
     <div class="form-actions">
       <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-      <button class="btn btn-primary" id="savePayment">✓ تسجيل</button>
+      <button class="btn btn-primary" id="saveP">✓ تسجيل</button>
     </div>
   `);
-
-  document.getElementById('savePayment').onclick = ()=>{
-    const amt = parseFloat(document.getElementById('pAmount').value)||0;
-    if(amt<=0) return alert('أدخل مبلغاً صحيحاً');
-    if(amt > rem + 0.001) return alert('المبلغ أكبر من المتبقي');
+  document.getElementById('saveP').onclick = ()=>{
+    const amt = parseFloat(document.getElementById('pA').value)||0;
+    if(amt<=0 || amt > rem+0.01) return alert('مبلغ غير صحيح');
     d.paid = (Number(d.paid)||0) + amt;
-    d.payments = d.payments || [];
-    d.payments.push({ id:uid(), amount:amt, date:new Date().toISOString(), note:document.getElementById('pNote').value.trim() });
     saveDB(); closeModal(); render(); toast('✓ تم تسجيل الدفعة');
   };
 }
 
-function showModal(title, bodyHTML){
-  const root = document.getElementById('modalRoot');
-  root.innerHTML = `
+function showModal(title, html){
+  document.getElementById('modalRoot').innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
       <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-title">
-          <span>${title}</span>
-          <button class="modal-close" onclick="closeModal()">✕</button>
-        </div>
-        ${bodyHTML}
+        <div class="modal-title"><span>${title}</span><button class="modal-close" onclick="closeModal()">✕</button></div>
+        ${html}
       </div>
     </div>`;
   document.body.style.overflow = 'hidden';
 }
-function closeModal(){
-  document.getElementById('modalRoot').innerHTML = '';
-  document.body.style.overflow = '';
-}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; document.body.style.overflow=''; }
 window.closeModal = closeModal;
 
-function sendWhatsApp(customerId){
-  const c = findCustomer(customerId);
-  if(!c) return;
-  if(!c.phone){
-    toast('⚠️ لا يوجد رقم هاتف مسجل لهذا الزبون');
-    return;
-  }
+/* ==================== WHATSAPP & PRINT ==================== */
+function sendWhatsApp(cId){
+  const c = findC(cId); if(!c) return;
+  if(!c.phone) return toast('⚠️ لا يوجد رقم هاتف');
   
-  let phone = c.phone.replace(/\D/g,''); 
-  if(phone.startsWith('0')) { phone = '961' + phone.substring(1); } // كود لبنان 961
+  let ph = c.phone.replace(/\D/g,'');
+  if(ph.startsWith('0')) ph = '961' + ph.substring(1); // إضافة كود لبنان
   
-  const remUSD = customerRemainingUSD(c);
-  const remLBP = customerRemainingLBP(c);
-  const paidUSD = customerPaidUSD(c);
-  const totalUSD = customerTotalUSD(c);
-  
+  const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
   let msg = `*كشف حساب - دفتر الديون* 💰\n\n`;
-  msg += `مرحباً *${c.name}* 👋\n`;
-  msg += `إليك تفاصيل حسابك بتاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
-  msg += `سعر الصرف المعتمد: 1$ = ${fmt(rate())} ل.ل\n\n`;
+  msg += `أهلاً *${c.name}* 👋\n`;
+  msg += `بتاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
+  msg += `سعر الصرف: 1$ = ${fmt(rate())} ل.ل\n\n`;
   
-  if(c.debts.length === 0){
-    msg += `لا توجد ديون مسجلة حالياً.`;
-  } else {
-    msg += `*تفاصيل الديون:*\n`;
-    msg += `--------------------\n`;
-    c.debts.forEach((d, i) => {
-      const curr = d.currency || USD;
-      msg += `${i+1}. ${d.description || 'دين'} (${getCurrencySymbol(curr)}):\n`;
-      msg += `   الإجمالي: ${fmtCurrency(debtTotal(d), curr)}\n`;
-      msg += `   المسدد: ${fmtCurrency(debtPaid(d), curr)}\n`;
-      msg += `   *المتبقي: ${fmtCurrency(debtRemaining(d), curr)}*\n`;
+  if(c.debts.length === 0) msg += `لا توجد ديون مسجلة.`;
+  else {
+    msg += `*تفاصيل الديون:*\n--------------------\n`;
+    c.debts.forEach((d,i)=>{
+      const cur = d.currency || USD;
+      msg += `${i+1}. ${d.description||'دين'} (${getCurSymbol(cur)}):\n`;
+      msg += `   المتبقي: *${fmtCur(dRem(d), cur)}*\n`;
       msg += `--------------------\n`;
     });
     msg += `\n📌 *إجمالي المتبقي:*\n`;
-    msg += `بالدولار: *${fmtCurrency(remUSD, USD)}*\n`;
-    msg += `بالليرة: *${fmtCurrency(remLBP, LBP)}*\n\n`;
-    msg += `المجموع الكلي: ${fmtCurrency(totalUSD, USD)}\n`;
-    msg += `إجمالي المسدد: ${fmtCurrency(paidUSD, USD)}\n\n`;
+    msg += `بالدولار: *${fmtCur(remUSD, USD)}*\n`;
+    msg += `بالليرة: *${fmtCur(remLBP, LBP)}*\n\n`;
   }
-  
   msg += `شكراً لتعاملك معنا! 🌹`;
-  
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+
+  window.open(`https://wa.me/${ph}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
-function printStatement(customerId){
-  const c = findCustomer(customerId);
-  if(!c) return;
-  const remUSD = customerRemainingUSD(c), remLBP = customerRemainingLBP(c);
-  const paidUSD = customerPaidUSD(c), totalUSD = customerTotalUSD(c);
+function printStatement(cId){
+  const c = findC(cId); if(!c) return;
+  const remUSD = cRemUSD(c), remLBP = cRemLBP(c);
+  const paidUSD = cPaidUSD(c), totalUSD = cTotalUSD(c);
   
   const rows = c.debts.map(d=>{
-    const curr = d.currency || USD;
-    return `
-    <tr>
-      <td>${escapeHtml(d.description||'—')} (${getCurrencySymbol(curr)})</td>
-      <td>${fmtCurrency(debtTotal(d), curr)}</td>
-      <td>${fmtCurrency(debtPaid(d), curr)}</td>
-      <td>${fmtCurrency(debtRemaining(d), curr)}</td>
+    const cur = d.currency || USD;
+    return `<tr>
+      <td>${escapeHtml(d.description||'—')} (${getCurSymbol(cur)})</td>
+      <td>${fmtCur(dTotal(d), cur)}</td>
+      <td>${fmtCur(dPaid(d), cur)}</td>
+      <td>${fmtCur(dRem(d), cur)}</td>
       <td>${d.dueDate?new Date(d.dueDate).toLocaleDateString('ar-EG'):'—'}</td>
     </tr>`;
   }).join('');
@@ -1074,40 +777,25 @@ function printStatement(customerId){
   document.getElementById('printArea').innerHTML = `
     <div class="print-header">
       <h1>💰 كشف حساب</h1>
-      <p style="color:#6b7280;font-size:13px">التاريخ: ${new Date().toLocaleDateString('ar-EG')}</p>
-      <p style="color:#6b7280;font-size:12px">سعر الصرف: 1$ = ${fmt(rate())} ل.ل</p>
+      <p>التاريخ: ${new Date().toLocaleDateString('ar-EG')} | سعر الصرف: ${fmt(rate())} ل.ل</p>
     </div>
-    <div style="margin-bottom:16px">
-      <p><b>الزبون:</b> ${escapeHtml(c.name)}</p>
-      ${c.phone?`<p><b>الهاتف:</b> ${escapeHtml(c.phone)}</p>`:''}
-    </div>
+    <p style="margin-bottom:16px"><b>الزبون:</b> ${escapeHtml(c.name)} ${c.phone?'| '+escapeHtml(c.phone):''}</p>
     <table class="print-table">
       <thead><tr><th>البيان</th><th>المبلغ</th><th>المسدد</th><th>المتبقي</th><th>الاستحقاق</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="5" style="text-align:center">لا توجد ديون</td></tr>'}</tbody>
       <tfoot>
-        <tr class="print-total"><td>الإجمالي (بالدولار)</td><td>${fmtCurrency(totalUSD, USD)}</td><td>${fmtCurrency(paidUSD, USD)}</td><td>${fmtCurrency(remUSD, USD)}</td><td></td></tr>
-        <tr class="print-total"><td>الإجمالي (بالليرة)</td><td colspan="3" style="text-align:center">${fmtCurrency(remLBP, LBP)} (المتبقي)</td><td></td></tr>
+        <tr class="print-total"><td>الإجمالي ($)</td><td>${fmtCur(totalUSD, USD)}</td><td>${fmtCur(paidUSD, USD)}</td><td>${fmtCur(remUSD, USD)}</td><td></td></tr>
+        <tr class="print-total"><td>المتبقي (ل.ل)</td><td colspan="3" style="text-align:center">${fmtCur(remLBP, LBP)}</td><td></td></tr>
       </tfoot>
     </table>
-    <div class="print-footer">
-      تم إنشاء هذا الكشف بواسطة دفتر الديون Pro
-    </div>`;
-
+    <div style="text-align:center;margin-top:24px;font-size:12px;color:#64748b">دفتر الديون Pro</div>`;
   window.print();
 }
 
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-}
-function toast(msg){
-  const t = document.createElement('div');
-  t.className='toast'; t.textContent=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 1800);
-}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toast(m){ const t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0'; t.style.transition='.3s'; setTimeout(()=>t.remove(),300);},2000); }
 
 init();
-
 })();
 </script>
 </body>
