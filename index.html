@@ -54,7 +54,7 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 .stat-card.warning::before{background:var(--warning)}
 .stat-card.info::before{background:var(--info)}
 .stat-label{font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600}
-.stat-value{font-size:20px;font-weight:800;color:var(--text)}
+.stat-value{font-size:18px;font-weight:800;color:var(--text)}
 .stat-value.danger{color:var(--danger)}
 .stat-value.success{color:var(--primary)}
 .stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
@@ -74,6 +74,7 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 .btn-sm{padding:8px 12px;font-size:13px}
 .btn-block{width:100%}
 .btn-icon{width:36px;height:36px;padding:0;border-radius:10px}
+.btn-wa{background:#dcfce7;color:#166534}
 
 /* ===== SEARCH / FILTER ===== */
 .search-box{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
@@ -94,7 +95,7 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 .customer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
 .customer-name{font-weight:800;font-size:16px;color:var(--text);display:flex;align-items:center;
   gap:6px;flex-wrap:wrap}
-.customer-amount{font-weight:800;font-size:16px;color:var(--danger);white-space:nowrap}
+.customer-amount{font-weight:800;font-size:15px;color:var(--danger);white-space:nowrap;text-align:left}
 .customer-amount.paid{color:var(--primary)}
 .customer-meta{display:flex;gap:12px;font-size:12px;color:var(--text-muted);margin-top:6px}
 .customer-meta span{display:flex;align-items:center;gap:4px}
@@ -105,13 +106,15 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 .badge-blacklist{background:#fee2e2;color:#dc2626}
 .badge-overdue{background:#fee2e2;color:#dc2626}
 .badge-paid{background:#d1fae5;color:#059669}
-.badge-archived{background:#e5e7eb;color:#6b7280}
+.badge-usd{background:#e0f2fe;color:#0369a1}
+.badge-lbp{background:#fef3c7;color:#b45309}
 [data-theme="dark"] .badge-regular{background:#064e3b;color:#34d399}
 [data-theme="dark"] .badge-late{background:#78350f;color:#fbbf24}
 [data-theme="dark"] .badge-blacklist{background:#7f1d1d;color:#fca5a5}
 [data-theme="dark"] .badge-overdue{background:#7f1d1d;color:#fca5a5}
 [data-theme="dark"] .badge-paid{background:#064e3b;color:#34d399}
-[data-theme="dark"] .badge-archived{background:#334155;color:#94a3b8}
+[data-theme="dark"] .badge-usd{background:#0c4a6e;color:#7dd3fc}
+[data-theme="dark"] .badge-lbp{background:#78350f;color:#fbbf24}
 
 /* ===== PROGRESS BAR ===== */
 .progress{height:8px;background:var(--bg);border-radius:8px;overflow:hidden;margin-top:8px}
@@ -171,6 +174,7 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary);background:var(--card)}
 .form-textarea{resize:vertical;min-height:70px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
 .form-actions{display:flex;gap:8px;margin-top:20px}
 .form-actions .btn{flex:1}
 
@@ -230,13 +234,14 @@ body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--t
 (function(){
 'use strict';
 
-/* ============================================================
-   البيانات (localStorage — بدون قاعدة بيانات)
-   ============================================================ */
 const STORAGE_KEY = 'daftar_diyoun_pro_v1';
+const USD = 'USD';
+const LBP = 'LBP';
+
+// إعدادات افتراضية (سعر الصرف الافتراضي 89500)
 const defaultData = () => ({
   customers: [],
-  settings: { currency:'د.ل', darkMode:false, reminderDays:3 }
+  settings: { exchangeRate: 89500, darkMode:false, reminderDays:3 }
 });
 
 let DB = loadDB();
@@ -250,17 +255,34 @@ function loadDB(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultData();
     const p = JSON.parse(raw);
-    return { customers:p.customers||[], settings:{...defaultData().settings,...(p.settings||{})} };
+    // في حال كان هناك إصدار قديم، نقوم بتحديث الإعدادات
+    return { 
+      customers:p.customers||[], 
+      settings:{...defaultData().settings, ...(p.settings||{})} 
+    };
   } catch(e){ return defaultData(); }
 }
 function saveDB(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function fmt(n){ return (Number(n)||0).toLocaleString('ar-EG',{maximumFractionDigits:2}); }
-function cur(){ return DB.settings.currency||'د.ل'; }
+function rate(){ return Number(DB.settings.exchangeRate) || 89500; }
 
-/* ============================================================
-   الحسابات
-   ============================================================ */
+// دوال العملة
+function getCurrencySymbol(curr) {
+  return curr === USD ? '$' : 'ل.ل';
+}
+function fmtCurrency(amount, curr) {
+  if(curr === USD) return '$' + fmt(amount);
+  return fmt(amount) + ' ل.ل';
+}
+function toUSD(amount, curr) {
+  return curr === LBP ? amount / rate() : amount;
+}
+function toLBP(amount, curr) {
+  return curr === USD ? amount * rate() : amount;
+}
+
+// الحسابات
 const debtTotal = d => Number(d.amount)||0;
 const debtPaid  = d => Number(d.paid)||0;
 const debtRemaining = d => Math.max(0, debtTotal(d)-debtPaid(d));
@@ -274,9 +296,16 @@ const debtIsUpcoming = (d, days) => {
   const diff = Math.ceil((new Date(d.dueDate) - new Date(new Date().toDateString()))/(86400000));
   return diff >= 0 && diff <= days;
 };
-const customerRemaining = c => c.debts.reduce((s,d)=>s+debtRemaining(d),0);
-const customerTotal     = c => c.debts.reduce((s,d)=>s+debtTotal(d),0);
-const customerPaid      = c => c.debts.reduce((s,d)=>s+debtPaid(d),0);
+
+// حسابات الزبون (تحويل الكل للدولار أو الليرة)
+const customerRemainingUSD = c => c.debts.reduce((s,d)=>s+toUSD(debtRemaining(d), d.currency||USD),0);
+const customerRemainingLBP = c => c.debts.reduce((s,d)=>s+toLBP(debtRemaining(d), d.currency||USD),0);
+
+const customerTotalUSD     = c => c.debts.reduce((s,d)=>s+toUSD(debtTotal(d), d.currency||USD),0);
+const customerTotalLBP     = c => c.debts.reduce((s,d)=>s+toLBP(debtTotal(d), d.currency||USD),0);
+
+const customerPaidUSD      = c => c.debts.reduce((s,d)=>s+toUSD(debtPaid(d), d.currency||USD),0);
+const customerPaidLBP      = c => c.debts.reduce((s,d)=>s+toLBP(debtPaid(d), d.currency||USD),0);
 
 function allCustomers(){ return DB.customers.filter(c=>!c.archived); }
 function findCustomer(id){ return DB.customers.find(c=>c.id===id); }
@@ -290,9 +319,6 @@ function reminderCount(){
   return n;
 }
 
-/* ============================================================
-   التهيئة
-   ============================================================ */
 function init(){
   applyTheme();
   attachGlobalEvents();
@@ -305,9 +331,6 @@ function applyTheme(){
   if(btn) btn.textContent = DB.settings.darkMode?'☀️':'🌙';
 }
 
-/* ============================================================
-   التنقل والأحداث
-   ============================================================ */
 function attachGlobalEvents(){
   document.querySelectorAll('.nav-btn').forEach(btn=>{
     btn.onclick = ()=>{ currentScreen = btn.dataset.screen; currentCustomerId=null; render(); };
@@ -340,29 +363,32 @@ function render(){
   }
 }
 
-/* ============================================================
-   لوحة التحكم
-   ============================================================ */
 function renderDashboard(el){
   const cs = allCustomers();
-  const totalRemaining = cs.reduce((s,c)=>s+customerRemaining(c),0);
-  const totalPaidSum   = cs.reduce((s,c)=>s+customerPaid(c),0);
-  const totalAll       = cs.reduce((s,c)=>s+customerTotal(c),0);
+  const totalRemainingUSD = cs.reduce((s,c)=>s+customerRemainingUSD(c),0);
+  const totalRemainingLBP = cs.reduce((s,c)=>s+customerRemainingLBP(c),0);
+  const totalPaidUSD      = cs.reduce((s,c)=>s+customerPaidUSD(c),0);
+  const totalPaidLBP      = cs.reduce((s,c)=>s+customerPaidLBP(c),0);
+  const totalAllUSD       = cs.reduce((s,c)=>s+customerTotalUSD(c),0);
+  
   const overdueCount   = cs.reduce((s,c)=>s+c.debts.filter(debtIsOverdue).length,0);
-  const activeCustomers= cs.filter(c=>customerRemaining(c)>0).length;
+  const activeCustomers= cs.filter(c=>customerRemainingUSD(c)>0 || customerRemainingLBP(c)>0).length;
 
   el.innerHTML = `
     <div class="screen">
+      <div style="text-align:center; margin-bottom:12px; font-size:12px; color:var(--text-muted)">
+        سعر الصرف المعتمد: 1$ = ${fmt(rate())} ل.ل
+      </div>
       <div class="stat-grid">
         <div class="stat-card danger">
-          <div class="stat-label">إجمالي الديون المتبقية</div>
-          <div class="stat-value danger">${fmt(totalRemaining)} ${cur()}</div>
-          <div class="stat-sub">من ${activeCustomers} زبون نشط</div>
+          <div class="stat-label">المتبقي (دولار)</div>
+          <div class="stat-value danger">${fmtCurrency(totalRemainingUSD, USD)}</div>
+          <div class="stat-sub">ما يعادل ${fmtCurrency(totalRemainingLBP, LBP)}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">إجمالي المسدد</div>
-          <div class="stat-value success">${fmt(totalPaidSum)} ${cur()}</div>
-          <div class="stat-sub">من أصل ${fmt(totalAll)} ${cur()}</div>
+          <div class="stat-label">إجمالي المسدد (دولار)</div>
+          <div class="stat-value success">${fmtCurrency(totalPaidUSD, USD)}</div>
+          <div class="stat-sub">ما يعادل ${fmtCurrency(totalPaidLBP, LBP)}</div>
         </div>
         <div class="stat-card warning">
           <div class="stat-label">ديون متأخرة</div>
@@ -370,19 +396,19 @@ function renderDashboard(el){
           <div class="stat-sub">تحتاج متابعة</div>
         </div>
         <div class="stat-card info">
-          <div class="stat-label">عدد الزبائن</div>
-          <div class="stat-value">${cs.length}</div>
-          <div class="stat-sub">زبون مسجل</div>
+          <div class="stat-label">الزبائن النشطين</div>
+          <div class="stat-value">${activeCustomers}</div>
+          <div class="stat-sub">من أصل ${cs.length} مسجلين</div>
         </div>
       </div>
 
       <div class="chart-box">
-        <h3>توزيع المسدد مقابل المتبقي</h3>
+        <h3>توزيع المسدد مقابل المتبقي (بالدولار)</h3>
         <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
       </div>
 
       <div class="chart-box">
-        <h3>أعلى 5 زبائن بالديون</h3>
+        <h3>أعلى 5 زبائن بالديون (بالدولار)</h3>
         <div class="chart-wrap"><canvas id="topChart"></canvas></div>
       </div>
 
@@ -391,15 +417,14 @@ function renderDashboard(el){
 
   document.getElementById('quickAdd').onclick = ()=>openCustomerModal();
 
-  // Chart 1 — Doughnut
   if(dashChart) dashChart.destroy();
   const dctx = document.getElementById('dashChart');
-  if(totalAll>0){
+  if(totalAllUSD>0){
     dashChart = new Chart(dctx, {
       type:'doughnut',
       data:{
         labels:['مسدد','متبقي'],
-        datasets:[{data:[totalPaidSum,totalRemaining],
+        datasets:[{data:[totalPaidUSD,totalRemainingUSD],
           backgroundColor:['#10b981','#ef4444'],borderWidth:0}]
       },
       options:{responsive:true,maintainAspectRatio:false,
@@ -409,16 +434,15 @@ function renderDashboard(el){
     dctx.parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:60px 0;font-size:13px">لا توجد بيانات بعد</p>';
   }
 
-  // Chart 2 — Bar
   if(topChart) topChart.destroy();
-  const top = [...cs].map(c=>({name:c.name,val:customerRemaining(c)}))
-                     .filter(x=>x.val>0).sort((a,b)=>b.val-a.val).slice(0,5);
+  const top = [...cs].map(c=>({name:c.name,val:customerRemainingUSD(c)}))
+                     .filter(x=>x.val>0.01).sort((a,b)=>b.val-a.val).slice(0,5);
   const tctx = document.getElementById('topChart');
   if(top.length && tctx){
     topChart = new Chart(tctx,{
       type:'bar',
       data:{labels:top.map(t=>t.name),
-        datasets:[{label:'المتبقي',data:top.map(t=>t.val),
+        datasets:[{label:'المتبقي ($)',data:top.map(t=>t.val),
           backgroundColor:'#10b981',borderRadius:8}]},
       options:{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false}},
@@ -430,9 +454,6 @@ function renderDashboard(el){
   }
 }
 
-/* ============================================================
-   قائمة الزبائن
-   ============================================================ */
 function renderCustomers(el){
   let list = allCustomers();
   if(searchQuery) list = list.filter(c =>
@@ -441,7 +462,7 @@ function renderCustomers(el){
   if(filterCategory!=='all') list = list.filter(c=>c.category===filterCategory);
   list.sort((a,b)=>{
     if(sortBy==='recent') return (b.createdAt||0)-(a.createdAt||0);
-    if(sortBy==='amount') return customerRemaining(b)-customerRemaining(a);
+    if(sortBy==='amount') return customerRemainingUSD(b)-customerRemainingUSD(a);
     if(sortBy==='name') return a.name.localeCompare(b.name,'ar');
     return 0;
   });
@@ -481,13 +502,15 @@ function renderCustomers(el){
 }
 
 function customerCardHTML(c){
-  const rem = customerRemaining(c);
-  const paid = customerPaid(c);
-  const total = customerTotal(c);
-  const pct = total>0 ? Math.round(paid/total*100) : 0;
+  const remUSD = customerRemainingUSD(c);
+  const remLBP = customerRemainingLBP(c);
+  const paidUSD = customerPaidUSD(c);
+  const totalUSD = customerTotalUSD(c);
+  const pct = totalUSD>0 ? Math.round(paidUSD/totalUSD*100) : 0;
   const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
   const catClass = c.category||'regular';
   const hasOverdue = c.debts.some(debtIsOverdue);
+  
   return `
     <div class="customer-card" data-customer="${c.id}">
       <div class="customer-head">
@@ -499,28 +522,27 @@ function customerCardHTML(c){
           </div>
           ${c.phone?`<div class="customer-meta"><span>📞 ${escapeHtml(c.phone)}</span></div>`:''}
         </div>
-        <div class="customer-amount ${rem===0?'paid':''}">${rem===0?'✓ مسدد':fmt(rem)+' '+cur()}</div>
+        <div class="customer-amount ${(remUSD<=0.01 && remLBP<=1)?'paid':''}">
+          ${(remUSD<=0.01 && remLBP<=1) ? '✓ مسدد' : `${fmtCurrency(remUSD, USD)}<br><span style="font-size:11px">${fmtCurrency(remLBP, LBP)}</span>`}
+        </div>
       </div>
-      ${total>0?`
+      ${totalUSD>0?`
         <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
         <div class="customer-meta" style="margin-top:6px">
-          <span>مسدد: ${fmt(paid)}</span>
-          <span>الكل: ${fmt(total)}</span>
+          <span>مسدد: ${fmtCurrency(paidUSD, USD)}</span>
           <span>${c.debts.length} دين</span>
         </div>`:''}
     </div>`;
 }
 
-/* ============================================================
-   تفاصيل الزبون
-   ============================================================ */
 function renderCustomerDetail(el){
   const c = findCustomer(currentCustomerId);
   if(!c){ currentCustomerId=null; return render(); }
-  const rem = customerRemaining(c);
-  const paid = customerPaid(c);
-  const total = customerTotal(c);
-  const pct = total>0 ? Math.round(paid/total*100) : 0;
+  const remUSD = customerRemainingUSD(c);
+  const remLBP = customerRemainingLBP(c);
+  const paidUSD = customerPaidUSD(c);
+  const totalUSD = customerTotalUSD(c);
+  const pct = totalUSD>0 ? Math.round(paidUSD/totalUSD*100) : 0;
   const catLabel = {regular:'منتظم',late:'متأخر',blacklist:'قائمة سوداء'}[c.category||'regular'];
 
   el.innerHTML = `
@@ -538,11 +560,19 @@ function renderCustomerDetail(el){
             ${c.note?`<div class="customer-meta" style="margin-top:4px"><span>📝 ${escapeHtml(c.note)}</span></div>`:''}
           </div>
         </div>
+        
         <div class="stat-grid" style="margin-top:16px;margin-bottom:0">
-          <div class="stat-card danger"><div class="stat-label">المتبقي</div><div class="stat-value danger">${fmt(rem)} ${cur()}</div></div>
-          <div class="stat-card"><div class="stat-label">المسدد</div><div class="stat-value success">${fmt(paid)} ${cur()}</div></div>
+          <div class="stat-card danger">
+            <div class="stat-label">المتبقي بالدولار</div>
+            <div class="stat-value danger">${fmtCurrency(remUSD, USD)}</div>
+            <div class="stat-sub">= ${fmtCurrency(remLBP, LBP)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">المسدد بالدولار</div>
+            <div class="stat-value success">${fmtCurrency(paidUSD, USD)}</div>
+          </div>
         </div>
-        ${total>0?`<div class="progress" style="margin-top:16px"><div class="progress-bar" style="width:${pct}%"></div></div>`:''}
+        ${totalUSD>0?`<div class="progress" style="margin-top:16px"><div class="progress-bar" style="width:${pct}%"></div></div>`:''}
       </div>
 
       <div class="section-header" style="margin-top:16px">
@@ -558,6 +588,7 @@ function renderCustomerDetail(el){
         <div class="section-title">إجراءات</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-wa" id="waBtn">📱 إرسال واتساب</button>
         <button class="btn btn-ghost" id="printBtn">🖨️ كشف حساب</button>
         <button class="btn btn-ghost" id="editBtn">✏️ تعديل</button>
         <button class="btn btn-danger" id="deleteBtn">🗑️ حذف</button>
@@ -569,14 +600,13 @@ function renderCustomerDetail(el){
   document.getElementById('editBtn').onclick = ()=>openCustomerModal(c);
   document.getElementById('deleteBtn').onclick = ()=>deleteCustomer(c.id);
   document.getElementById('printBtn').onclick = ()=>printStatement(c.id);
+  document.getElementById('waBtn').onclick = ()=>sendWhatsApp(c.id);
 
   el.querySelectorAll('[data-debt-pay]').forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    openPaymentModal(c.id, b.dataset.debtPay);
+    e.stopPropagation(); openPaymentModal(c.id, b.dataset.debtPay);
   });
   el.querySelectorAll('[data-debt-edit]').forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    openDebtModal(c.id, b.dataset.debtEdit);
+    e.stopPropagation(); openDebtModal(c.id, b.dataset.debtEdit);
   });
   el.querySelectorAll('[data-debt-del]').forEach(b => b.onclick = e => {
     e.stopPropagation();
@@ -592,19 +622,22 @@ function debtRowHTML(d, cid){
   const rem = debtRemaining(d);
   const total = debtTotal(d);
   const paid = debtPaid(d);
+  const curr = d.currency || USD;
   const pct = total>0 ? Math.round(paid/total*100) : 0;
   const overdue = debtIsOverdue(d);
   const isPaid = debtIsPaid(d);
   const dueTxt = d.dueDate ? new Date(d.dueDate).toLocaleDateString('ar-EG') : '—';
+  const badgeCurr = curr === USD ? '<span class="badge badge-usd">دولار</span>' : '<span class="badge badge-lbp">ليرة</span>';
+
   return `
     <div class="debt-item ${overdue?'overdue':''} ${isPaid?'paid':''}">
       <div class="debt-head">
-        <div class="debt-desc">${escapeHtml(d.description||'دين')}</div>
-        <div class="debt-amount">${isPaid?'✓ مسدد':fmt(rem)+' '+cur()}</div>
+        <div class="debt-desc">${escapeHtml(d.description||'دين')} ${badgeCurr}</div>
+        <div class="debt-amount">${isPaid?'✓ مسدد':fmtCurrency(rem, curr)}</div>
       </div>
       <div class="debt-info">
-        <span>💰 ${fmt(total)} ${cur()}</span>
-        <span>✅ ${fmt(paid)}</span>
+        <span>💰 ${fmtCurrency(total, curr)}</span>
+        <span>✅ ${fmtCurrency(paid, curr)}</span>
         <span>📅 ${dueTxt}</span>
         ${overdue?'<span class="badge badge-overdue">متأخر</span>':''}
       </div>
@@ -617,9 +650,6 @@ function debtRowHTML(d, cid){
     </div>`;
 }
 
-/* ============================================================
-   التنبيهات
-   ============================================================ */
 function renderReminders(el){
   const days = DB.settings.reminderDays||3;
   const overdue = [], upcoming = [];
@@ -659,6 +689,7 @@ function renderReminders(el){
 }
 
 function reminderCardHTML(c, d, overdue){
+  const curr = d.currency || USD;
   return `
     <div class="customer-card" data-go-customer="${c.id}">
       <div class="customer-head">
@@ -669,14 +700,11 @@ function reminderCardHTML(c, d, overdue){
           <div class="customer-meta"><span>📝 ${escapeHtml(d.description||'دين')}</span></div>
           <div class="customer-meta"><span>📅 ${new Date(d.dueDate).toLocaleDateString('ar-EG')}</span></div>
         </div>
-        <div class="customer-amount">${fmt(debtRemaining(d))} ${cur()}</div>
+        <div class="customer-amount">${fmtCurrency(debtRemaining(d), curr)}</div>
       </div>
     </div>`;
 }
 
-/* ============================================================
-   النسخ الاحتياطي
-   ============================================================ */
 function renderBackup(el){
   el.innerHTML = `
     <div class="screen">
@@ -688,7 +716,6 @@ function renderBackup(el){
         </p>
         <button class="btn btn-primary btn-block" id="exportBtn">📥 تنزيل ملف النسخة</button>
       </div>
-
       <div class="card">
         <h3 style="font-size:15px;margin-bottom:8px">📥 استيراد البيانات</h3>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
@@ -697,7 +724,6 @@ function renderBackup(el){
         <input type="file" id="importFile" accept=".json" style="display:none">
         <button class="btn btn-ghost btn-block" id="importBtn">📂 اختيار ملف</button>
       </div>
-
       <div class="card">
         <h3 style="font-size:15px;margin-bottom:8px">🗑️ حذف كل البيانات</h3>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
@@ -705,7 +731,6 @@ function renderBackup(el){
         </p>
         <button class="btn btn-danger btn-block" id="clearBtn">حذف كل شيء</button>
       </div>
-
       <div class="card">
         <h3 style="font-size:15px;margin-bottom:8px">📊 إحصائيات</h3>
         <div class="customer-meta" style="font-size:14px">
@@ -754,19 +779,20 @@ function importData(e){
   e.target.value='';
 }
 
-/* ============================================================
-   الإعدادات
-   ============================================================ */
 function renderSettings(el){
   el.innerHTML = `
     <div class="screen">
       <div class="section-title" style="margin-bottom:12px">⚙️ الإعدادات</div>
+      
+      <div class="card">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">💵 سعر صرف الدولار مقابل الليرة اللبنانية</label>
+          <input class="form-input" id="rateInput" type="number" value="${DB.settings.exchangeRate}" placeholder="مثال: 89500">
+          <div class="stat-sub" style="margin-top:6px">سيتم استخدام هذا السعر للتحويل التلقائي بين العملتين.</div>
+        </div>
+      </div>
 
       <div class="card">
-        <div class="form-group">
-          <label class="form-label">💱 رمز العملة</label>
-          <input class="form-input" id="curInput" value="${escapeHtml(DB.settings.currency)}" placeholder="مثال: د.ل، ر.س، $">
-        </div>
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label">🔔 عدد أيام التنبيه المسبق</label>
           <input class="form-input" id="remInput" type="number" min="1" max="30" value="${DB.settings.reminderDays}">
@@ -785,8 +811,7 @@ function renderSettings(el){
       <button class="btn btn-primary btn-block" id="saveSettings">💾 حفظ الإعدادات</button>
 
       <div style="text-align:center;margin-top:24px;color:var(--text-muted);font-size:12px">
-        دفتر الديون Pro — الإصدار 2.0<br>
-        يعمل بدون إنترنت • بياناتك على جهازك فقط
+        دفتر الديون Pro — الإصدار 3.0<br>يعمل بدون إنترنت • بياناتك على جهازك فقط
       </div>
     </div>`;
 
@@ -794,16 +819,14 @@ function renderSettings(el){
     DB.settings.darkMode = !DB.settings.darkMode; saveDB(); applyTheme(); render();
   };
   document.getElementById('saveSettings').onclick = ()=>{
-    const c = document.getElementById('curInput').value.trim() || 'د.ل';
-    const r = Math.max(1, Math.min(30, parseInt(document.getElementById('remInput').value)||3));
-    DB.settings.currency = c; DB.settings.reminderDays = r;
+    const r = parseFloat(document.getElementById('rateInput').value) || 89500;
+    const d = Math.max(1, Math.min(30, parseInt(document.getElementById('remInput').value)||3));
+    DB.settings.exchangeRate = r; 
+    DB.settings.reminderDays = d;
     saveDB(); toast('✓ تم حفظ الإعدادات'); render();
   };
 }
 
-/* ============================================================
-   Modal — زبون
-   ============================================================ */
 function openCustomerModal(c){
   const editing = !!c;
   const data = c || { name:'', phone:'', note:'', category:'regular' };
@@ -813,8 +836,8 @@ function openCustomerModal(c){
       <input class="form-input" id="cName" value="${escapeHtml(data.name)}" placeholder="اسم الزبون" autofocus>
     </div>
     <div class="form-group">
-      <label class="form-label">رقم الهاتف</label>
-      <input class="form-input" id="cPhone" value="${escapeHtml(data.phone||'')}" placeholder="اختياري" type="tel">
+      <label class="form-label">رقم الهاتف (مع رمز الدولة للواتساب)</label>
+      <input class="form-input" id="cPhone" value="${escapeHtml(data.phone||'')}" placeholder="مثال: 0912345678" type="tel">
     </div>
     <div class="form-group">
       <label class="form-label">التصنيف</label>
@@ -857,31 +880,37 @@ function deleteCustomer(id){
   saveDB(); currentCustomerId=null; render(); toast('✓ تم الحذف');
 }
 
-/* ============================================================
-   Modal — دين
-   ============================================================ */
 function openDebtModal(customerId, debtId){
   const c = findCustomer(customerId);
   if(!c) return;
   const editing = !!debtId;
   const d = editing ? c.debts.find(x=>x.id===debtId) : null;
-  const data = d || { description:'', amount:'', paid:0, dueDate:'', note:'' };
+  const data = d || { description:'', amount:'', paid:0, dueDate:'', note:'', currency: USD };
 
   showModal(editing?'✏️ تعديل دين':'➕ دين جديد', `
     <div class="form-group">
       <label class="form-label">الوصف</label>
       <input class="form-input" id="dDesc" value="${escapeHtml(data.description||'')}" placeholder="مثال: بضاعة، سلفة...">
     </div>
-    <div class="form-row">
+    
+    <div class="form-row-3">
       <div class="form-group">
         <label class="form-label">المبلغ *</label>
         <input class="form-input" id="dAmount" type="number" step="0.01" min="0" value="${data.amount}" placeholder="0">
       </div>
       <div class="form-group">
-        <label class="form-label">المدفوع مسبقاً</label>
+        <label class="form-label">العملة</label>
+        <select class="form-select" id="dCurr">
+          <option value="USD" ${data.currency==='USD'?'selected':''}>دولار $</option>
+          <option value="LBP" ${data.currency==='LBP'?'selected':''}>ليرة ل.ل</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">المدفوع</label>
         <input class="form-input" id="dPaid" type="number" step="0.01" min="0" value="${data.paid||0}" ${editing?'':'readonly'} placeholder="0">
       </div>
     </div>
+    
     <div class="form-group">
       <label class="form-label">موعد الاستحقاق</label>
       <input class="form-input" id="dDue" type="date" value="${data.dueDate||''}">
@@ -902,7 +931,9 @@ function openDebtModal(customerId, debtId){
     const paid = editing ? (parseFloat(document.getElementById('dPaid').value)||0) : 0;
     const obj = {
       description: document.getElementById('dDesc').value.trim(),
-      amount, paid,
+      amount, 
+      paid,
+      currency: document.getElementById('dCurr').value,
       dueDate: document.getElementById('dDue').value || '',
       note: document.getElementById('dNote').value.trim()
     };
@@ -915,24 +946,22 @@ function openDebtModal(customerId, debtId){
   };
 }
 
-/* ============================================================
-   Modal — دفعة
-   ============================================================ */
 function openPaymentModal(customerId, debtId){
   const c = findCustomer(customerId);
   const d = c.debts.find(x=>x.id===debtId);
   if(!d) return;
   const rem = debtRemaining(d);
+  const curr = d.currency || USD;
 
   showModal('💵 تسجيل دفعة', `
     <div class="card" style="margin-bottom:16px;background:var(--bg);box-shadow:none">
       <div class="customer-meta" style="font-size:13px">
         <div>الدين: <b>${escapeHtml(d.description||'دين')}</b></div>
-        <div>المتبقي: <b style="color:var(--danger)">${fmt(rem)} ${cur()}</b></div>
+        <div>المتبقي: <b style="color:var(--danger)">${fmtCurrency(rem, curr)}</b></div>
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">المبلغ *</label>
+      <label class="form-label">المبلغ (${getCurrencySymbol(curr)}) *</label>
       <input class="form-input" id="pAmount" type="number" step="0.01" min="0" max="${rem}" value="${rem}" autofocus>
     </div>
     <div class="form-group">
@@ -956,9 +985,6 @@ function openPaymentModal(customerId, debtId){
   };
 }
 
-/* ============================================================
-   Modal — نظام عام
-   ============================================================ */
 function showModal(title, bodyHTML){
   const root = document.getElementById('modalRoot');
   root.innerHTML = `
@@ -980,26 +1006,76 @@ function closeModal(){
 }
 window.closeModal = closeModal;
 
-/* ============================================================
-   طباعة كشف الحساب (PDF)
-   ============================================================ */
+function sendWhatsApp(customerId){
+  const c = findCustomer(customerId);
+  if(!c) return;
+  if(!c.phone){
+    toast('⚠️ لا يوجد رقم هاتف مسجل لهذا الزبون');
+    return;
+  }
+  
+  let phone = c.phone.replace(/\D/g,''); 
+  if(phone.startsWith('0')) { phone = '961' + phone.substring(1); } // كود لبنان 961
+  
+  const remUSD = customerRemainingUSD(c);
+  const remLBP = customerRemainingLBP(c);
+  const paidUSD = customerPaidUSD(c);
+  const totalUSD = customerTotalUSD(c);
+  
+  let msg = `*كشف حساب - دفتر الديون* 💰\n\n`;
+  msg += `مرحباً *${c.name}* 👋\n`;
+  msg += `إليك تفاصيل حسابك بتاريخ: ${new Date().toLocaleDateString('ar-EG')}\n`;
+  msg += `سعر الصرف المعتمد: 1$ = ${fmt(rate())} ل.ل\n\n`;
+  
+  if(c.debts.length === 0){
+    msg += `لا توجد ديون مسجلة حالياً.`;
+  } else {
+    msg += `*تفاصيل الديون:*\n`;
+    msg += `--------------------\n`;
+    c.debts.forEach((d, i) => {
+      const curr = d.currency || USD;
+      msg += `${i+1}. ${d.description || 'دين'} (${getCurrencySymbol(curr)}):\n`;
+      msg += `   الإجمالي: ${fmtCurrency(debtTotal(d), curr)}\n`;
+      msg += `   المسدد: ${fmtCurrency(debtPaid(d), curr)}\n`;
+      msg += `   *المتبقي: ${fmtCurrency(debtRemaining(d), curr)}*\n`;
+      msg += `--------------------\n`;
+    });
+    msg += `\n📌 *إجمالي المتبقي:*\n`;
+    msg += `بالدولار: *${fmtCurrency(remUSD, USD)}*\n`;
+    msg += `بالليرة: *${fmtCurrency(remLBP, LBP)}*\n\n`;
+    msg += `المجموع الكلي: ${fmtCurrency(totalUSD, USD)}\n`;
+    msg += `إجمالي المسدد: ${fmtCurrency(paidUSD, USD)}\n\n`;
+  }
+  
+  msg += `شكراً لتعاملك معنا! 🌹`;
+  
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
 function printStatement(customerId){
   const c = findCustomer(customerId);
   if(!c) return;
-  const total = customerTotal(c), paid = customerPaid(c), rem = customerRemaining(c);
-  const rows = c.debts.map(d=>`
+  const remUSD = customerRemainingUSD(c), remLBP = customerRemainingLBP(c);
+  const paidUSD = customerPaidUSD(c), totalUSD = customerTotalUSD(c);
+  
+  const rows = c.debts.map(d=>{
+    const curr = d.currency || USD;
+    return `
     <tr>
-      <td>${escapeHtml(d.description||'—')}</td>
-      <td>${fmt(debtTotal(d))}</td>
-      <td>${fmt(debtPaid(d))}</td>
-      <td>${fmt(debtRemaining(d))}</td>
+      <td>${escapeHtml(d.description||'—')} (${getCurrencySymbol(curr)})</td>
+      <td>${fmtCurrency(debtTotal(d), curr)}</td>
+      <td>${fmtCurrency(debtPaid(d), curr)}</td>
+      <td>${fmtCurrency(debtRemaining(d), curr)}</td>
       <td>${d.dueDate?new Date(d.dueDate).toLocaleDateString('ar-EG'):'—'}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   document.getElementById('printArea').innerHTML = `
     <div class="print-header">
       <h1>💰 كشف حساب</h1>
       <p style="color:#6b7280;font-size:13px">التاريخ: ${new Date().toLocaleDateString('ar-EG')}</p>
+      <p style="color:#6b7280;font-size:12px">سعر الصرف: 1$ = ${fmt(rate())} ل.ل</p>
     </div>
     <div style="margin-bottom:16px">
       <p><b>الزبون:</b> ${escapeHtml(c.name)}</p>
@@ -1009,10 +1085,10 @@ function printStatement(customerId){
       <thead><tr><th>البيان</th><th>المبلغ</th><th>المسدد</th><th>المتبقي</th><th>الاستحقاق</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="5" style="text-align:center">لا توجد ديون</td></tr>'}</tbody>
       <tfoot>
-        <tr class="print-total"><td>الإجمالي</td><td>${fmt(total)}</td><td>${fmt(paid)}</td><td>${fmt(rem)}</td><td></td></tr>
+        <tr class="print-total"><td>الإجمالي (بالدولار)</td><td>${fmtCurrency(totalUSD, USD)}</td><td>${fmtCurrency(paidUSD, USD)}</td><td>${fmtCurrency(remUSD, USD)}</td><td></td></tr>
+        <tr class="print-total"><td>الإجمالي (بالليرة)</td><td colspan="3" style="text-align:center">${fmtCurrency(remLBP, LBP)} (المتبقي)</td><td></td></tr>
       </tfoot>
     </table>
-    <p style="text-align:left;font-size:12px;color:#6b7280">العملة: ${escapeHtml(cur())}</p>
     <div class="print-footer">
       تم إنشاء هذا الكشف بواسطة دفتر الديون Pro
     </div>`;
@@ -1020,9 +1096,6 @@ function printStatement(customerId){
   window.print();
 }
 
-/* ============================================================
-   أدوات مساعدة
-   ============================================================ */
 function escapeHtml(s){
   return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
@@ -1033,9 +1106,6 @@ function toast(msg){
   setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 1800);
 }
 
-/* ============================================================
-   انطلاق التطبيق
-   ============================================================ */
 init();
 
 })();
